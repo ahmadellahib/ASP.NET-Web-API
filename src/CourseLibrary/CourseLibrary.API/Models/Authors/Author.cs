@@ -2,7 +2,7 @@
 
 namespace CourseLibrary.API.Models.Authors;
 
-public class Author
+internal class Author
 {
     public Guid Id { get; set; }
     public string FirstName { get; set; } = string.Empty;
