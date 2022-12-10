@@ -3,7 +3,7 @@ using System.Reflection;
 
 namespace CourseLibrary.API.Brokers.Storages;
 
-internal partial class StorageBroker : DbContext
+internal partial class StorageBroker : DbContext, IStorageBroker
 {
     private readonly IWebHostEnvironment _env;
     private readonly IConfiguration _configuration;

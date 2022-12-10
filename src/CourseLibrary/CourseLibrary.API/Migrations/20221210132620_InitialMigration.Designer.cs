@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CourseLibrary.API.Migrations
 {
     [DbContext(typeof(StorageBroker))]
-    [Migration("20221204145706_InitialMigration")]
+    [Migration("20221210132620_InitialMigration")]
     partial class InitialMigration
     {
         /// <inheritdoc />
@@ -42,6 +42,9 @@ namespace CourseLibrary.API.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<byte>("Gender")
+                        .HasColumnType("tinyint");
+
                     b.Property<string>("LastName")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -55,24 +58,6 @@ namespace CourseLibrary.API.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Authors");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("d28888e9-2ba9-473a-a40f-e38cb54f9b35"),
-                            DateOfBirth = new DateTimeOffset(new DateTime(1980, 7, 23, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)),
-                            FirstName = "Berry",
-                            LastName = "Griffin Beak Eldritch",
-                            MainCategory = "Ships"
-                        },
-                        new
-                        {
-                            Id = new Guid("da2fd609-d754-4feb-8acd-c4f9ff13ba96"),
-                            DateOfBirth = new DateTimeOffset(new DateTime(1978, 5, 21, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)),
-                            FirstName = "Nancy",
-                            LastName = "Swashbuckler Rye",
-                            MainCategory = "Rum"
-                        });
                 });
 
             modelBuilder.Entity("CourseLibrary.API.Models.Courses.Course", b =>
@@ -98,29 +83,6 @@ namespace CourseLibrary.API.Migrations
                     b.HasIndex("AuthorId");
 
                     b.ToTable("Courses");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("5b1c2b4d-48c7-402a-80c3-cc796ad49c6b"),
-                            AuthorId = new Guid("d28888e9-2ba9-473a-a40f-e38cb54f9b35"),
-                            Description = "Commandeering a ship in rough waters isn't easy.  Commandeering it without getting caught is even harder.  In this course you'll learn how to sail away and avoid those pesky musketeers.",
-                            Title = "Commandeering a Ship Without Getting Caught"
-                        },
-                        new
-                        {
-                            Id = new Guid("d8663e5e-7494-4f81-8739-6e0de1bea7ee"),
-                            AuthorId = new Guid("d28888e9-2ba9-473a-a40f-e38cb54f9b35"),
-                            Description = "In this course, the author provides tips to avoid, or, if needed, overthrow pirate mutiny.",
-                            Title = "Overthrowing Mutiny"
-                        },
-                        new
-                        {
-                            Id = new Guid("d173e20d-159e-4127-9ce9-b0ac2564ad97"),
-                            AuthorId = new Guid("da2fd609-d754-4feb-8acd-c4f9ff13ba96"),
-                            Description = "Every good pirate loves rum, but it also has a tendency to get you into trouble.  In this course you'll learn how to avoid that.  This new exclusive edition includes an additional chapter on how to run fast without falling while drunk.",
-                            Title = "Avoiding Brawls While Drinking as Much Rum as You Desire"
-                        });
                 });
 
             modelBuilder.Entity("CourseLibrary.API.Models.Courses.Course", b =>

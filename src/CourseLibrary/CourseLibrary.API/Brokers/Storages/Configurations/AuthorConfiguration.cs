@@ -24,24 +24,5 @@ public class AuthorConfiguration : IEntityTypeConfiguration<Author>
         builder.Property(x => x.MainCategory)
             .HasMaxLength(50)
             .IsRequired();
-
-        builder.HasData(
-            new Author()
-            {
-                Id = Guid.Parse("d28888e9-2ba9-473a-a40f-e38cb54f9b35"),
-                FirstName = "Berry",
-                LastName = "Griffin Beak Eldritch",
-                DateOfBirth = new DateTime(1980, 7, 23),
-                MainCategory = "Ships"
-            },
-            new Author()
-            {
-                Id = Guid.Parse("da2fd609-d754-4feb-8acd-c4f9ff13ba96"),
-                FirstName = "Nancy",
-                LastName = "Swashbuckler Rye",
-                DateOfBirth = new DateTime(1978, 5, 21),
-                MainCategory = "Rum"
-            }
-            );
     }
 }

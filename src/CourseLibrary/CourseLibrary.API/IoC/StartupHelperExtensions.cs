@@ -1,4 +1,8 @@
-﻿using CourseLibrary.API.Brokers.Storages;
+﻿using Bogus;
+using CourseLibrary.API.Brokers.Storages;
+using CourseLibrary.API.Models.Authors;
+using CourseLibrary.API.Models.Courses;
+using CourseLibrary.API.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace CourseLibrary.API.IoC;
@@ -52,27 +56,76 @@ internal static class StartupHelperExtensions
         using IServiceScope scope = app.Services.CreateScope();
         try
         {
-            StorageBroker? context = scope.ServiceProvider.GetService<StorageBroker>();
+            StorageBroker? storageBroker = scope.ServiceProvider.GetService<StorageBroker>();
 
-            if (context != null)
+            if (storageBroker != null)
             {
                 if (app.Environment.IsDevelopment())
                 {
-                    await context.Database.EnsureDeletedAsync();
+                    await storageBroker.Database.EnsureDeletedAsync();
                 }
 
-                IEnumerable<string> pendingMigrations = await context.Database.GetPendingMigrationsAsync();
+                IEnumerable<string> pendingMigrations = await storageBroker.Database.GetPendingMigrationsAsync();
 
                 if (pendingMigrations.Any())
                 {
-                    await context.Database.MigrateAsync();
+                    await storageBroker.Database.MigrateAsync();
                 }
+
+                await SeedData(storageBroker);
             }
         }
         catch (Exception ex)
         {
-            ILogger logger = scope.ServiceProvider.GetRequiredService<ILogger>();
+            ILogger logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
             logger.LogError(ex, "An error occurred while migrating the database.");
+        }
+    }
+
+    private static async Task SeedData(StorageBroker storageBroker)
+    {
+        if (!storageBroker.Authors.Any())
+        {
+            //Set the randomizer seed if you wish to generate repeatable data sets.
+            Randomizer.Seed = new Random(8675309);
+
+            string[] category = new[] { "Science", "Cultural Studies", "Art Studio", "Wellness and Health", "Creative Writing", "Business", "Technology and Data Science" };
+
+            Faker<Author> testAuthors = new Faker<Author>()
+                .StrictMode(false)
+                .RuleFor(x => x.Gender, f => f.PickRandom<Gender>())
+                .RuleFor(x => x.FirstName, (f, x) => f.Name.FirstName(ReturnGenderType(x.Gender)))
+                .RuleFor(x => x.LastName, (f, x) => f.Name.LastName(ReturnGenderType(x.Gender)))
+                .RuleFor(x => x.DateOfBirth, f => f.Date.PastOffset(30, DateTime.Now.AddYears(-30)))
+                .RuleFor(x => x.DateOfDeath, f => null)
+                .RuleFor(x => x.MainCategory, f => f.PickRandom(category));
+
+            List<Author> authors = testAuthors.Generate(10);
+
+            Faker<Course> testCourses = new Faker<Course>()
+                .StrictMode(false)
+                .RuleForType(typeof(string), f => f.Lorem.Word())
+                .RuleFor(x => x.AuthorId, f => f.PickRandom(authors).Id)
+                .RuleFor(x => x.Title, f => f.Hacker.Phrase())
+                .RuleFor(x => x.Description, f => f.Lorem.Paragraph());
+
+            await storageBroker.Authors.AddRangeAsync(authors);
+            await storageBroker.Courses.AddRangeAsync(testCourses.Generate(20));
+        }
+
+        await storageBroker.SaveChangesAsync();
+    }
+
+    private static Bogus.DataSets.Name.Gender ReturnGenderType(Gender gender)
+    {
+        switch (gender)
+        {
+            case Gender.Male:
+                return Bogus.DataSets.Name.Gender.Male;
+            case Gender.Female:
+                return Bogus.DataSets.Name.Gender.Female;
+            default:
+                return Bogus.DataSets.Name.Gender.Male;
         }
     }
 }
