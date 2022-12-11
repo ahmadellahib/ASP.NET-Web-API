@@ -2,7 +2,7 @@ using CourseLibrary.API.Models.Authors;
 
 namespace CourseLibrary.API.Models.Courses;
 
-internal class Course
+public class Course
 {
     public Guid Id { get; set; }
     public string Title { get; set; } = string.Empty;

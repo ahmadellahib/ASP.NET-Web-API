@@ -3,7 +3,7 @@ using CourseLibrary.API.Models.Enums;
 
 namespace CourseLibrary.API.Models.Authors;
 
-internal class Author
+public class Author
 {
     public Guid Id { get; set; }
     public string FirstName { get; set; } = string.Empty;

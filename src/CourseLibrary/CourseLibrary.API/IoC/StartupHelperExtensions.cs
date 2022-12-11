@@ -100,17 +100,17 @@ internal static class StartupHelperExtensions
                 .RuleFor(x => x.DateOfDeath, f => null)
                 .RuleFor(x => x.MainCategory, f => f.PickRandom(category));
 
-            List<Author> authors = testAuthors.Generate(10);
+            List<Author> authors = testAuthors.Generate(20);
 
             Faker<Course> testCourses = new Faker<Course>()
                 .StrictMode(false)
                 .RuleForType(typeof(string), f => f.Lorem.Word())
                 .RuleFor(x => x.AuthorId, f => f.PickRandom(authors).Id)
-                .RuleFor(x => x.Title, f => f.Hacker.Phrase())
+                .RuleFor(x => x.Title, f => f.Lorem.Sentence())
                 .RuleFor(x => x.Description, f => f.Lorem.Paragraph());
 
             await storageBroker.Authors.AddRangeAsync(authors);
-            await storageBroker.Courses.AddRangeAsync(testCourses.Generate(20));
+            await storageBroker.Courses.AddRangeAsync(testCourses.Generate(1000));
         }
 
         await storageBroker.SaveChangesAsync();
