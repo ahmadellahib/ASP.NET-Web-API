@@ -1,5 +1,6 @@
 ﻿using CourseLibrary.API.Models.Authors;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace CourseLibrary.API.Brokers.Storages;
 
@@ -7,28 +8,33 @@ internal partial class StorageBroker
 {
     internal DbSet<Author> Authors { get; set; }
 
-    public Task<Author> InsertAuthorAsync(Author author, CancellationToken cancellationToken)
+    public async Task<Author> InsertAuthorAsync(Author author, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        EntityEntry<Author> authorEntityEntry = await Authors.AddAsync(author, cancellationToken);
+        await SaveChangesAsync(cancellationToken);
+
+        return authorEntityEntry.Entity;
     }
 
-    public Task<Author> UpdateAuthorAsync(Author author, CancellationToken cancellationToken)
+    public async Task<Author> UpdateAuthorAsync(Author author, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        EntityEntry<Author> authorEntityEntry = Authors.Update(author);
+        await SaveChangesAsync(cancellationToken);
+
+        return authorEntityEntry.Entity;
     }
 
-    public Task<bool> DeleteAuthorAsync(Author author, CancellationToken cancellationToken)
+    public async Task<bool> DeleteAuthorAsync(Author author, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        Authors.Remove(author);
+        int result = await SaveChangesAsync(cancellationToken);
+
+        return result > 0;
     }
 
-    public IQueryable<Author> SelectAllAuthors()
-    {
-        throw new NotImplementedException();
-    }
+    public IQueryable<Author> SelectAllAuthors() =>
+        Authors.AsQueryable();
 
-    public ValueTask<Author?> SelectAuthorByIdAsync(Guid authorId, CancellationToken cancellationToken)
-    {
-        throw new NotImplementedException();
-    }
+    public async ValueTask<Author?> SelectAuthorByIdAsync(Guid authorId, CancellationToken cancellationToken) =>
+         await Authors.FindAsync(new object[] { authorId }, cancellationToken);
 }
