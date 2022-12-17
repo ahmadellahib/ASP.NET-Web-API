@@ -3,7 +3,7 @@ using CourseLibrary.API.Models.Enums;
 
 namespace CourseLibrary.API.Models.Authors;
 
-public class Author
+public class Author : IConcurrencyAware, IAuditable
 {
     public Guid Id { get; set; }
     public string FirstName { get; set; } = string.Empty;
@@ -14,4 +14,11 @@ public class Author
     public string MainCategory { get; set; } = string.Empty;
 
     public List<Course> Courses { get; set; } = new();
+
+    public DateTimeOffset CreatedDate { get; set; }
+    public DateTimeOffset UpdatedDate { get; set; }
+    public Guid CreatedById { get; set; }
+    public Guid UpdatedById { get; set; }
+
+    public string ConcurrencyStamp { get; set; } = string.Empty;
 }

@@ -98,7 +98,12 @@ internal static class StartupHelperExtensions
                 .RuleFor(x => x.LastName, (f, x) => f.Name.LastName(ReturnGenderType(x.Gender)))
                 .RuleFor(x => x.DateOfBirth, f => f.Date.PastOffset(30, DateTime.Now.AddYears(-30)))
                 .RuleFor(x => x.DateOfDeath, f => null)
-                .RuleFor(x => x.MainCategory, f => f.PickRandom(category));
+                .RuleFor(x => x.MainCategory, f => f.PickRandom(category))
+                .RuleFor(x => x.CreatedDate, DateTimeOffset.UtcNow)
+                .RuleFor(x => x.UpdatedDate, f => DateTimeOffset.UtcNow.AddDays(f.Random.Number(1, 100)))
+                .RuleFor(x => x.CreatedById, f => f.Random.Guid())
+                .RuleFor(x => x.UpdatedById, f => f.Random.Guid())
+                .RuleFor(x => x.ConcurrencyStamp, f => f.Random.Guid().ToString());
 
             List<Author> authors = testAuthors.Generate(20);
 
@@ -107,7 +112,12 @@ internal static class StartupHelperExtensions
                 .RuleForType(typeof(string), f => f.Lorem.Word())
                 .RuleFor(x => x.AuthorId, f => f.PickRandom(authors).Id)
                 .RuleFor(x => x.Title, f => f.Lorem.Sentence())
-                .RuleFor(x => x.Description, f => f.Lorem.Paragraph());
+                .RuleFor(x => x.Description, f => f.Lorem.Paragraph())
+                .RuleFor(x => x.CreatedDate, DateTimeOffset.UtcNow)
+                .RuleFor(x => x.UpdatedDate, f => DateTimeOffset.UtcNow.AddDays(f.Random.Number(1, 100)))
+                .RuleFor(x => x.CreatedById, f => f.Random.Guid())
+                .RuleFor(x => x.UpdatedById, f => f.Random.Guid())
+                .RuleFor(x => x.ConcurrencyStamp, f => f.Random.Guid().ToString());
 
             await storageBroker.Authors.AddRangeAsync(authors);
             await storageBroker.Courses.AddRangeAsync(testCourses.Generate(1000));

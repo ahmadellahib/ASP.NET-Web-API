@@ -21,7 +21,12 @@ namespace CourseLibrary.API.Migrations
                     Gender = table.Column<byte>(type: "tinyint", nullable: false),
                     DateOfBirth = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
                     DateOfDeath = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    MainCategory = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false)
+                    MainCategory = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    CreatedDate = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    UpdatedDate = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    CreatedById = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UpdatedById = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -35,7 +40,12 @@ namespace CourseLibrary.API.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Title = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
                     Description = table.Column<string>(type: "nvarchar(1500)", maxLength: 1500, nullable: true),
-                    AuthorId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    AuthorId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CreatedDate = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    UpdatedDate = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    CreatedById = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UpdatedById = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false)
                 },
                 constraints: table =>
                 {

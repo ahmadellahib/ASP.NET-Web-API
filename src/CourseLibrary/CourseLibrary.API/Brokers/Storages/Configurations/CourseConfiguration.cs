@@ -21,5 +21,9 @@ public class CourseConfiguration : IEntityTypeConfiguration<Course>
             .WithMany(a => a.Courses)
             .HasForeignKey(c => c.AuthorId)
             .OnDelete(DeleteBehavior.NoAction);
+
+        builder.Property(t => t.ConcurrencyStamp)
+            .HasMaxLength(255)
+            .IsRequired();
     }
 }

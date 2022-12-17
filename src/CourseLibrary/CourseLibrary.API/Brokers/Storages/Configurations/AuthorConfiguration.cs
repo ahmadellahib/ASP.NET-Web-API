@@ -24,5 +24,9 @@ public class AuthorConfiguration : IEntityTypeConfiguration<Author>
         builder.Property(x => x.MainCategory)
             .HasMaxLength(50)
             .IsRequired();
+
+        builder.Property(t => t.ConcurrencyStamp)
+            .HasMaxLength(255)
+            .IsRequired();
     }
 }
