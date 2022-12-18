@@ -1,24 +1,15 @@
 ﻿using CourseLibrary.API.Models.Courses;
-using CourseLibrary.API.Models.Enums;
+using CourseLibrary.API.Models.Users;
 
 namespace CourseLibrary.API.Models.Authors;
 
-public class Author : IConcurrencyAware, IAuditable
+public class Author : IConcurrencyAware
 {
     public Guid Id { get; set; }
-    public string FirstName { get; set; } = string.Empty;
-    public string LastName { get; set; } = string.Empty;
-    public Gender Gender { get; set; }
-    public DateTimeOffset DateOfBirth { get; set; }
-    public DateTimeOffset? DateOfDeath { get; set; }
+    public Guid UserId { get; set; }
     public string MainCategory { get; set; } = string.Empty;
-
-    public List<Course> Courses { get; set; } = new();
-
-    public DateTimeOffset CreatedDate { get; set; }
-    public DateTimeOffset UpdatedDate { get; set; }
-    public Guid CreatedById { get; set; }
-    public Guid UpdatedById { get; set; }
-
     public string ConcurrencyStamp { get; set; } = string.Empty;
+
+    public virtual User User { get; set; } = null!;
+    public virtual IEnumerable<Course>? Courses { get; set; }
 }

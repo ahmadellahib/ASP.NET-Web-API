@@ -3,6 +3,7 @@ using CourseLibrary.API.Brokers.Storages;
 using CourseLibrary.API.Models.Authors;
 using CourseLibrary.API.Models.Courses;
 using CourseLibrary.API.Models.Enums;
+using CourseLibrary.API.Models.Users;
 using Microsoft.EntityFrameworkCore;
 
 namespace CourseLibrary.API.IoC;
@@ -84,28 +85,40 @@ internal static class StartupHelperExtensions
 
     private static async Task SeedData(StorageBroker storageBroker)
     {
-        if (!storageBroker.Authors.Any())
+        if (!storageBroker.Users.Any())
         {
             //Set the randomizer seed if you wish to generate repeatable data sets.
             Randomizer.Seed = new Random(8675309);
 
             string[] category = new[] { "Science", "Cultural Studies", "Art Studio", "Wellness and Health", "Creative Writing", "Business", "Technology and Data Science" };
 
-            Faker<Author> testAuthors = new Faker<Author>()
+            Faker<User> testUsers = new Faker<User>()
                 .StrictMode(false)
                 .RuleFor(x => x.Gender, f => f.PickRandom<Gender>())
                 .RuleFor(x => x.FirstName, (f, x) => f.Name.FirstName(ReturnGenderType(x.Gender)))
                 .RuleFor(x => x.LastName, (f, x) => f.Name.LastName(ReturnGenderType(x.Gender)))
                 .RuleFor(x => x.DateOfBirth, f => f.Date.PastOffset(30, DateTime.Now.AddYears(-30)))
                 .RuleFor(x => x.DateOfDeath, f => null)
-                .RuleFor(x => x.MainCategory, f => f.PickRandom(category))
-                .RuleFor(x => x.CreatedDate, DateTimeOffset.UtcNow)
-                .RuleFor(x => x.UpdatedDate, f => DateTimeOffset.UtcNow.AddDays(f.Random.Number(1, 100)))
-                .RuleFor(x => x.CreatedById, f => f.Random.Guid())
-                .RuleFor(x => x.UpdatedById, f => f.Random.Guid())
                 .RuleFor(x => x.ConcurrencyStamp, f => f.Random.Guid().ToString());
 
-            List<Author> authors = testAuthors.Generate(20);
+            List<User> users = testUsers.Generate(30);
+            await storageBroker.Users.AddRangeAsync(users);
+            await storageBroker.SaveChangesAsync();
+
+            Faker<Author> testAuthors = new Faker<Author>()
+                .StrictMode(false)
+                .RuleFor(x => x.UserId, f => f.PickRandom(users).Id)
+                .RuleFor(x => x.MainCategory, f => f.PickRandom(category))
+                .RuleFor(x => x.ConcurrencyStamp, f => f.Random.Guid().ToString());
+
+            List<Author> authors = testAuthors.Generate(200)
+                .GroupBy(a => a.UserId)
+                .Select(a => a.First())
+                .Take(20)
+                .ToList();
+
+            await storageBroker.Authors.AddRangeAsync(authors);
+            await storageBroker.SaveChangesAsync();
 
             Faker<Course> testCourses = new Faker<Course>()
                 .StrictMode(false)
@@ -113,17 +126,17 @@ internal static class StartupHelperExtensions
                 .RuleFor(x => x.AuthorId, f => f.PickRandom(authors).Id)
                 .RuleFor(x => x.Title, f => f.Lorem.Sentence())
                 .RuleFor(x => x.Description, f => f.Lorem.Paragraph())
-                .RuleFor(x => x.CreatedDate, DateTimeOffset.UtcNow)
+                .RuleFor(x => x.CreatedDate, f => DateTimeOffset.UtcNow.AddDays(f.Random.Number(-100, -1)))
                 .RuleFor(x => x.UpdatedDate, f => DateTimeOffset.UtcNow.AddDays(f.Random.Number(1, 100)))
-                .RuleFor(x => x.CreatedById, f => f.Random.Guid())
-                .RuleFor(x => x.UpdatedById, f => f.Random.Guid())
+                .RuleFor(x => x.CreatedById, f => f.PickRandom(users).Id)
+                .RuleFor(x => x.UpdatedById, f => f.PickRandom(users).Id)
                 .RuleFor(x => x.ConcurrencyStamp, f => f.Random.Guid().ToString());
 
-            await storageBroker.Authors.AddRangeAsync(authors);
             await storageBroker.Courses.AddRangeAsync(testCourses.Generate(1000));
+            await storageBroker.SaveChangesAsync();
         }
 
-        await storageBroker.SaveChangesAsync();
+
     }
 
     private static Bogus.DataSets.Name.Gender ReturnGenderType(Gender gender)

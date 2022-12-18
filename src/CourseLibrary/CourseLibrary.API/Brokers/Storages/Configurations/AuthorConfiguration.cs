@@ -8,25 +8,19 @@ public class AuthorConfiguration : IEntityTypeConfiguration<Author>
 {
     void IEntityTypeConfiguration<Author>.Configure(EntityTypeBuilder<Author> builder)
     {
-        builder.HasKey(c => c.Id);
+        builder.HasKey(a => a.Id);
 
-        builder.Property(x => x.FirstName)
-             .HasMaxLength(50)
-             .IsRequired();
+        builder.HasIndex(a => a.UserId)
+            .IsUnique();
 
-        builder.Property(x => x.LastName)
+        builder.Property(a => a.MainCategory)
             .HasMaxLength(50)
             .IsRequired();
 
-        builder.Property(x => x.DateOfBirth)
-            .IsRequired();
-
-        builder.Property(x => x.MainCategory)
-            .HasMaxLength(50)
-            .IsRequired();
-
-        builder.Property(t => t.ConcurrencyStamp)
+        builder.Property(a => a.ConcurrencyStamp)
             .HasMaxLength(255)
             .IsRequired();
+
+        builder.HasOne(a => a.User);
     }
 }
