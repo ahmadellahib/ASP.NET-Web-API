@@ -3,9 +3,9 @@ using FluentValidation;
 
 namespace CourseLibrary.API.Validators.Authors;
 
-public class AuthorValidatior : BaseValidator<Author>
+public class AuthorValidator : BaseValidator<Author>
 {
-    public AuthorValidatior(bool isNewEntity)
+    public AuthorValidator(bool isNewEntity)
         : base(isNewEntity, false, true)
     {
         RuleFor(x => x.Id)
