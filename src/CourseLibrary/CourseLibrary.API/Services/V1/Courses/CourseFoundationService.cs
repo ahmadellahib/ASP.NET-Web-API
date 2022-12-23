@@ -24,7 +24,7 @@ public class CourseFoundationService : ICourseFoundationService
         throw new NotImplementedException();
     }
 
-    public ValueTask<Course?> RetrieveCourseByIdAsync(Guid courseId, CancellationToken cancellationToken)
+    public ValueTask<Course> RetrieveCourseByIdAsync(Guid courseId, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }

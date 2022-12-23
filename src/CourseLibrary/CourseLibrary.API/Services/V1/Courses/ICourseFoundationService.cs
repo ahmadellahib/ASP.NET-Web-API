@@ -12,5 +12,5 @@ public interface ICourseFoundationService
 
     IQueryable<Course> RetrieveAllCourses();
 
-    ValueTask<Course?> RetrieveCourseByIdAsync(Guid courseId, CancellationToken cancellationToken);
+    ValueTask<Course> RetrieveCourseByIdAsync(Guid courseId, CancellationToken cancellationToken);
 }

@@ -20,4 +20,22 @@ public static class StaticData
         public const string MustBeEmptyString = "Must be empty string";
         public const string InvalidEnumValue = "Invalid enum value";
     }
+
+    public class WarningMessages
+    {
+        public const string NoEntitiesFoundInStorage = "No entities found in storage.";
+    }
+
+    public static class ExceptionMessages
+    {
+        public static string NoRowsWasEffectedByDeleting(string className, object id)
+        {
+            return $"No rows was effected while deleting a {className} with id {id}";
+        }
+
+        public static string NoRowsWasEffectedByDeleting(string className, object id1, object id2)
+        {
+            return $"No rows was effected while deleting a {className} with composite id ({id1}, {id2})";
+        }
+    }
 }

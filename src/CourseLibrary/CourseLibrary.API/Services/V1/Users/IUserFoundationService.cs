@@ -12,5 +12,5 @@ public interface IUserFoundationService
 
     IQueryable<User> RetrieveAllUsers();
 
-    ValueTask<User?> RetrieveUserByIdAsync(Guid userId, CancellationToken cancellationToken);
+    ValueTask<User> RetrieveUserByIdAsync(Guid userId, CancellationToken cancellationToken);
 }

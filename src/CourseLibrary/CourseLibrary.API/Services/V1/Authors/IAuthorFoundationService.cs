@@ -12,5 +12,5 @@ public interface IAuthorFoundationService
 
     IQueryable<Author> RetrieveAllAuthors();
 
-    ValueTask<Author?> RetrieveAuthorByIdAsync(Guid authorId, CancellationToken cancellationToken);
+    ValueTask<Author> RetrieveAuthorByIdAsync(Guid authorId, CancellationToken cancellationToken);
 }

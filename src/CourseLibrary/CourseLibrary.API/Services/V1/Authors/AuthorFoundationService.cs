@@ -24,7 +24,7 @@ public class AuthorFoundationService : IAuthorFoundationService
         throw new NotImplementedException();
     }
 
-    public ValueTask<Author?> RetrieveAuthorByIdAsync(Guid authorId, CancellationToken cancellationToken)
+    public ValueTask<Author> RetrieveAuthorByIdAsync(Guid authorId, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }

@@ -2,7 +2,7 @@
 
 namespace CourseLibrary.API.Brokers.Storages;
 
-internal partial interface IStorageBroker
+public partial interface IStorageBroker
 {
     Task<User> InsertUserAsync(User user, CancellationToken cancellationToken);
     Task<User> UpdateUserAsync(User user, CancellationToken cancellationToken);
