@@ -10,7 +10,9 @@ public interface IUserFoundationService
 
     Task RemoveUserByIdAsync(Guid userId, CancellationToken cancellationToken);
 
+    ValueTask<User> RetrieveUserByIdAsync(Guid userId, CancellationToken cancellationToken);
+
     IQueryable<User> RetrieveAllUsers();
 
-    ValueTask<User> RetrieveUserByIdAsync(Guid userId, CancellationToken cancellationToken);
+    IQueryable<User> SearchUsers(UserResourceParameters userResourceParameters);
 }

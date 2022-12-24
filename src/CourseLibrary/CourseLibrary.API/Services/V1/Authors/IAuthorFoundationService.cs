@@ -10,7 +10,9 @@ public interface IAuthorFoundationService
 
     Task RemoveAuthorByIdAsync(Guid authorId, CancellationToken cancellationToken);
 
+    ValueTask<Author> RetrieveAuthorByIdAsync(Guid authorId, CancellationToken cancellationToken);
+
     IQueryable<Author> RetrieveAllAuthors();
 
-    ValueTask<Author> RetrieveAuthorByIdAsync(Guid authorId, CancellationToken cancellationToken);
+    IQueryable<Author> SearchAuthors(AuthorResourceParameters authorResourceParameters);
 }

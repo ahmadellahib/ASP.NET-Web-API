@@ -10,7 +10,9 @@ public interface ICourseFoundationService
 
     Task RemoveCourseByIdAsync(Guid courseId, CancellationToken cancellationToken);
 
+    ValueTask<Course> RetrieveCourseByIdAsync(Guid courseId, CancellationToken cancellationToken);
+
     IQueryable<Course> RetrieveAllCourses();
 
-    ValueTask<Course> RetrieveCourseByIdAsync(Guid courseId, CancellationToken cancellationToken);
+    IQueryable<Course> SearchCourses(CourseResourceParameters courseResourceParameters);
 }

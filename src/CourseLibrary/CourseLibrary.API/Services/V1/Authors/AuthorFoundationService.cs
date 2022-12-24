@@ -1,7 +1,9 @@
 ﻿using CourseLibrary.API.Brokers.Loggings;
 using CourseLibrary.API.Brokers.Storages;
+using CourseLibrary.API.Extensions;
 using CourseLibrary.API.Models.Authors;
 using CourseLibrary.API.Models.Exceptions;
+using CourseLibrary.API.Services.V1.PropertyMappings;
 using CourseLibrary.API.Validators.Authors;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
@@ -12,15 +14,18 @@ public class AuthorFoundationService : IAuthorFoundationService
 {
     private readonly IStorageBroker _storageBroker;
     private readonly IServicesLogicValidator _servicesLogicValidator;
+    private readonly IPropertyMappingService _propertyMappingService;
     private readonly ILoggingBroker<AuthorFoundationService> _loggingBroker;
     private readonly ServicesExceptionsLogger<AuthorFoundationService> _servicesExceptionsLogger;
 
     public AuthorFoundationService(IStorageBroker storageBroker,
+        IPropertyMappingService propertyMappingService,
         IServicesLogicValidator servicesLogicValidator,
         ILoggingBroker<AuthorFoundationService> loggingBroker,
         ServicesExceptionsLogger<AuthorFoundationService> servicesExceptionsLogger)
     {
         _storageBroker = storageBroker ?? throw new ArgumentNullException(nameof(storageBroker));
+        _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
         _servicesLogicValidator = servicesLogicValidator ?? throw new ArgumentNullException(nameof(servicesLogicValidator));
         _loggingBroker = loggingBroker ?? throw new ArgumentNullException(nameof(loggingBroker));
         _servicesExceptionsLogger = servicesExceptionsLogger ?? throw new ArgumentNullException(nameof(servicesExceptionsLogger));
@@ -149,6 +154,35 @@ public class AuthorFoundationService : IAuthorFoundationService
         }
     }
 
+    public async ValueTask<Author> RetrieveAuthorByIdAsync(Guid authorId, CancellationToken cancellationToken)
+    {
+        try
+        {
+            _servicesLogicValidator.ValidateParameter(authorId, nameof(authorId));
+
+            Author? storageAuthor = await _storageBroker.SelectAuthorByIdAsync(authorId, cancellationToken);
+            _servicesLogicValidator.ValidateStorageEntity<Author>(storageAuthor, authorId);
+
+            return storageAuthor!;
+        }
+        catch (InvalidParameterException invalidIdException)
+        {
+            throw _servicesExceptionsLogger.CreateAndLogValidationException(invalidIdException);
+        }
+        catch (NotFoundEntityException<Author> notFoundEntityException)
+        {
+            throw _servicesExceptionsLogger.CreateAndLogValidationException(notFoundEntityException);
+        }
+        catch (Exception exception) when (exception is OperationCanceledException || exception is TaskCanceledException)
+        {
+            throw _servicesExceptionsLogger.CreateAndLogCancellationException(exception);
+        }
+        catch (Exception exception)
+        {
+            throw _servicesExceptionsLogger.CreateAndLogServiceException(exception);
+        }
+    }
+
     public IQueryable<Author> RetrieveAllAuthors()
     {
         try
@@ -172,28 +206,30 @@ public class AuthorFoundationService : IAuthorFoundationService
         }
     }
 
-    public async ValueTask<Author> RetrieveAuthorByIdAsync(Guid authorId, CancellationToken cancellationToken)
+    public IQueryable<Author> SearchAuthors(AuthorResourceParameters authorResourceParameters)
     {
         try
         {
-            _servicesLogicValidator.ValidateParameter(authorId, nameof(authorId));
+            if (!_propertyMappingService.ValidMappingExistsFor<Author, Author>(authorResourceParameters.OrderBy))
+            {
+                throw new ResourceParametersException($"Order by '{authorResourceParameters.OrderBy}' is not valid property for Author.");
+            }
 
-            Author? storageAuthor = await _storageBroker.SelectAuthorByIdAsync(authorId, cancellationToken);
-            _servicesLogicValidator.ValidateStorageEntity<Author>(storageAuthor, authorId);
+            IQueryable<Author> collection = RetrieveAllAuthors();
 
-            return storageAuthor!;
-        }
-        catch (InvalidParameterException invalidIdException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogValidationException(invalidIdException);
-        }
-        catch (NotFoundEntityException<Author> notFoundEntityException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogValidationException(notFoundEntityException);
-        }
-        catch (Exception exception) when (exception is OperationCanceledException || exception is TaskCanceledException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogCancellationException(exception);
+            if (!string.IsNullOrEmpty(authorResourceParameters.SearchQuery))
+            {
+                authorResourceParameters.SearchQuery = authorResourceParameters.SearchQuery.Trim();
+                collection = collection.Where(x => x.MainCategory.Contains(authorResourceParameters.SearchQuery));
+            }
+
+            if (!string.IsNullOrWhiteSpace(authorResourceParameters.OrderBy))
+            {
+                Dictionary<string, PropertyMappingValue> authorPropertyMappingDictionary = _propertyMappingService.GetPropertyMapping<Author, Author>();
+                collection = collection.ApplySort(authorResourceParameters.OrderBy, authorPropertyMappingDictionary);
+            }
+
+            return collection;
         }
         catch (Exception exception)
         {
