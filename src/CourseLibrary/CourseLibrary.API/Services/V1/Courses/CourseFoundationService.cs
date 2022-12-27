@@ -1,6 +1,5 @@
 ﻿using CourseLibrary.API.Brokers.Loggings;
 using CourseLibrary.API.Brokers.Storages;
-using CourseLibrary.API.Extensions;
 using CourseLibrary.API.Models.Courses;
 using CourseLibrary.API.Models.Exceptions;
 using CourseLibrary.API.Services.V1.PropertyMappings;
@@ -16,13 +15,13 @@ public class CourseFoundationService : ICourseFoundationService
     private readonly IPropertyMappingService _propertyMappingService;
     private readonly IServicesLogicValidator _servicesLogicValidator;
     private readonly ILoggingBroker<CourseFoundationService> _loggingBroker;
-    private readonly ServicesExceptionsLogger<CourseFoundationService> _servicesExceptionsLogger;
+    private readonly IServicesExceptionsLogger<CourseFoundationService> _servicesExceptionsLogger;
 
     public CourseFoundationService(IStorageBroker storageBroker,
         IPropertyMappingService propertyMappingService,
         IServicesLogicValidator servicesLogicValidator,
         ILoggingBroker<CourseFoundationService> loggingBroker,
-        ServicesExceptionsLogger<CourseFoundationService> servicesExceptionsLogger)
+        IServicesExceptionsLogger<CourseFoundationService> servicesExceptionsLogger)
     {
         _storageBroker = storageBroker ?? throw new ArgumentNullException(nameof(storageBroker));
         _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
@@ -36,8 +35,6 @@ public class CourseFoundationService : ICourseFoundationService
         try
         {
             _servicesLogicValidator.ValidateEntity(course, new CourseValidator(true));
-
-            course.ConcurrencyStamp = Guid.NewGuid().ToString();
 
             return await _storageBroker.InsertCourseAsync(course, cancellationToken);
         }
@@ -75,25 +72,11 @@ public class CourseFoundationService : ICourseFoundationService
         {
             _servicesLogicValidator.ValidateEntity(course, new CourseValidator(false));
 
-            Course? maybeCourse = await _storageBroker.SelectCourseByIdAsync(course.Id, cancellationToken);
-            _servicesLogicValidator.ValidateStorageEntity<Course>(maybeCourse, course.Id);
-            _servicesLogicValidator.ValidateEntityConcurrency<Course>(course, maybeCourse!);
-
-            course.ConcurrencyStamp = Guid.NewGuid().ToString();
-
             return await _storageBroker.UpdateCourseAsync(course, cancellationToken);
         }
         catch (InvalidEntityException<Course> invalidEntityException)
         {
             throw _servicesExceptionsLogger.CreateAndLogServiceException(invalidEntityException);
-        }
-        catch (NotFoundEntityException<Course> notFoundEntityException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogValidationException(notFoundEntityException);
-        }
-        catch (EntityConcurrencyException<Course> entityConcurrencyException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogValidationException(entityConcurrencyException);
         }
         catch (SqlException sqlException)
         {
@@ -154,6 +137,9 @@ public class CourseFoundationService : ICourseFoundationService
         }
     }
 
+    public async Task RemoveCoursesByAuthorIdAsync(Guid authorId, CancellationToken cancellationToken) =>
+        await _storageBroker.DeleteCoursesByAuthorIdAsync(authorId, cancellationToken);
+
     public async ValueTask<Course> RetrieveCourseByIdAsync(Guid courseId, CancellationToken cancellationToken)
     {
         try
@@ -199,37 +185,6 @@ public class CourseFoundationService : ICourseFoundationService
         catch (SqlException sqlException)
         {
             throw _servicesExceptionsLogger.CreateAndLogCriticalDependencyException(sqlException);
-        }
-        catch (Exception exception)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogServiceException(exception);
-        }
-    }
-
-    public IQueryable<Course> SearchCourses(CourseResourceParameters courseResourceParameters)
-    {
-        try
-        {
-            if (!_propertyMappingService.ValidMappingExistsFor<Course, Course>(courseResourceParameters.OrderBy))
-            {
-                throw new ResourceParametersException($"Order by '{courseResourceParameters.OrderBy}' is not valid property for Course.");
-            }
-
-            IQueryable<Course> collection = RetrieveAllCourses();
-
-            if (!string.IsNullOrEmpty(courseResourceParameters.SearchQuery))
-            {
-                courseResourceParameters.SearchQuery = courseResourceParameters.SearchQuery.Trim();
-                collection = collection.Where(x => x.Title.Contains(courseResourceParameters.SearchQuery));
-            }
-
-            if (!string.IsNullOrWhiteSpace(courseResourceParameters.OrderBy))
-            {
-                Dictionary<string, PropertyMappingValue> coursePropertyMappingDictionary = _propertyMappingService.GetPropertyMapping<Course, Course>();
-                collection = collection.ApplySort(courseResourceParameters.OrderBy, coursePropertyMappingDictionary);
-            }
-
-            return collection;
         }
         catch (Exception exception)
         {

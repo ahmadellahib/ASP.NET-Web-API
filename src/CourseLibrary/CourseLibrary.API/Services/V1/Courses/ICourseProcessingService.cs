@@ -2,7 +2,7 @@
 
 namespace CourseLibrary.API.Services.V1.Courses;
 
-public interface ICourseFoundationService
+public interface ICourseProcessingService
 {
     Task<Course> CreateCourseAsync(Course course, CancellationToken cancellationToken);
 
@@ -15,4 +15,6 @@ public interface ICourseFoundationService
     ValueTask<Course> RetrieveCourseByIdAsync(Guid courseId, CancellationToken cancellationToken);
 
     IQueryable<Course> RetrieveAllCourses();
+
+    IQueryable<Course> SearchCourses(CourseResourceParameters courseResourceParameters);
 }

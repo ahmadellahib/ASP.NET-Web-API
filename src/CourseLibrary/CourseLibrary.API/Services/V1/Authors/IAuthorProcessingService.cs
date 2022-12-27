@@ -2,7 +2,7 @@
 
 namespace CourseLibrary.API.Services.V1.Authors;
 
-public interface IAuthorFoundationService
+public interface IAuthorProcessingService
 {
     Task<Author> CreateAuthorAsync(Author author, CancellationToken cancellationToken);
 
@@ -13,4 +13,6 @@ public interface IAuthorFoundationService
     ValueTask<Author> RetrieveAuthorByIdAsync(Guid authorId, CancellationToken cancellationToken);
 
     IQueryable<Author> RetrieveAllAuthors();
+
+    IQueryable<Author> SearchAuthors(AuthorResourceParameters authorResourceParameters);
 }

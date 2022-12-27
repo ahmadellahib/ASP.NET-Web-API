@@ -1,25 +1,21 @@
-﻿using CourseLibrary.API.Models.Courses;
+﻿using CourseLibrary.API.Contracts.Courses;
 using FluentValidation;
 
 namespace CourseLibrary.API.Validators.Courses;
 
-public class CourseValidator : BaseValidator<Course>
+public class CourseForCreationValidator : AbstractValidator<CourseForCreation>
 {
-    public CourseValidator()
-        : this(false) { }
-
-    public CourseValidator(bool isNewEntity)
-        : base(isNewEntity, false, true)
+    public CourseForCreationValidator()
     {
-        RuleFor(x => x.Id)
-            .NotEmpty()
-            .WithMessage(StaticData.ValidationMessages.CannotBeEmpty);
-
         RuleFor(x => x.AuthorId)
             .NotEmpty()
             .WithMessage(StaticData.ValidationMessages.CannotBeEmpty);
 
         RuleFor(x => x.Title)
+            .NotEmpty()
+            .WithMessage(StaticData.ValidationMessages.CannotBeEmpty);
+
+        RuleFor(x => x.CreatedById)
             .NotEmpty()
             .WithMessage(StaticData.ValidationMessages.CannotBeEmpty);
     }

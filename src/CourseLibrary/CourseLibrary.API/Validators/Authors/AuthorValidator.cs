@@ -5,6 +5,9 @@ namespace CourseLibrary.API.Validators.Authors;
 
 public class AuthorValidator : BaseValidator<Author>
 {
+    public AuthorValidator()
+        : this(false) { }
+
     public AuthorValidator(bool isNewEntity)
         : base(isNewEntity, false, true)
     {

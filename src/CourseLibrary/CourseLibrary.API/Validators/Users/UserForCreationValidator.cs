@@ -1,20 +1,12 @@
-﻿using CourseLibrary.API.Models.Users;
+﻿using CourseLibrary.API.Contracts.Users;
 using FluentValidation;
 
 namespace CourseLibrary.API.Validators.Users;
 
-public class UserValidator : BaseValidator<User>
+public class UserForCreationValidator : AbstractValidator<UserForCreation>
 {
-    public UserValidator()
-        : this(false) { }
-
-    public UserValidator(bool isNewEntity)
-        : base(isNewEntity, false, true)
+    public UserForCreationValidator()
     {
-        RuleFor(x => x.Id)
-            .NotEmpty()
-            .WithMessage(StaticData.ValidationMessages.CannotBeEmpty);
-
         RuleFor(x => x.FirstName)
             .NotEmpty()
             .WithMessage(StaticData.ValidationMessages.CannotBeEmpty);

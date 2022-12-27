@@ -18,6 +18,7 @@ public class ResourceParameters
         set => _pageNumber = (value < 1) ? 1 : value;
     }
 
+    [DefaultValue(100)]
     public int PageSize
     {
         get => _pageSize;

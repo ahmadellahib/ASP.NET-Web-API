@@ -16,13 +16,13 @@ public class AuthorFoundationService : IAuthorFoundationService
     private readonly IServicesLogicValidator _servicesLogicValidator;
     private readonly IPropertyMappingService _propertyMappingService;
     private readonly ILoggingBroker<AuthorFoundationService> _loggingBroker;
-    private readonly ServicesExceptionsLogger<AuthorFoundationService> _servicesExceptionsLogger;
+    private readonly IServicesExceptionsLogger<AuthorFoundationService> _servicesExceptionsLogger;
 
     public AuthorFoundationService(IStorageBroker storageBroker,
         IPropertyMappingService propertyMappingService,
         IServicesLogicValidator servicesLogicValidator,
         ILoggingBroker<AuthorFoundationService> loggingBroker,
-        ServicesExceptionsLogger<AuthorFoundationService> servicesExceptionsLogger)
+        IServicesExceptionsLogger<AuthorFoundationService> servicesExceptionsLogger)
     {
         _storageBroker = storageBroker ?? throw new ArgumentNullException(nameof(storageBroker));
         _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
@@ -36,8 +36,6 @@ public class AuthorFoundationService : IAuthorFoundationService
         try
         {
             _servicesLogicValidator.ValidateEntity(author, new AuthorValidator(true));
-
-            author.ConcurrencyStamp = Guid.NewGuid().ToString();
 
             return await _storageBroker.InsertAuthorAsync(author, cancellationToken);
         }
@@ -75,25 +73,11 @@ public class AuthorFoundationService : IAuthorFoundationService
         {
             _servicesLogicValidator.ValidateEntity(author, new AuthorValidator(false));
 
-            Author? maybeAuthor = await _storageBroker.SelectAuthorByIdAsync(author.Id, cancellationToken);
-            _servicesLogicValidator.ValidateStorageEntity<Author>(maybeAuthor, author.Id);
-            _servicesLogicValidator.ValidateEntityConcurrency<Author>(author, maybeAuthor!);
-
-            author.ConcurrencyStamp = Guid.NewGuid().ToString();
-
             return await _storageBroker.UpdateAuthorAsync(author, cancellationToken);
         }
         catch (InvalidEntityException<Author> invalidEntityException)
         {
             throw _servicesExceptionsLogger.CreateAndLogServiceException(invalidEntityException);
-        }
-        catch (NotFoundEntityException<Author> notFoundEntityException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogValidationException(notFoundEntityException);
-        }
-        catch (EntityConcurrencyException<Author> entityConcurrencyException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogValidationException(entityConcurrencyException);
         }
         catch (SqlException sqlException)
         {

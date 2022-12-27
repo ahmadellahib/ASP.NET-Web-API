@@ -1,9 +1,19 @@
 ﻿using Bogus;
+using CourseLibrary.API.Brokers.Loggings;
 using CourseLibrary.API.Brokers.Storages;
+using CourseLibrary.API.Filters;
 using CourseLibrary.API.Models.Authors;
 using CourseLibrary.API.Models.Courses;
 using CourseLibrary.API.Models.Enums;
 using CourseLibrary.API.Models.Users;
+using CourseLibrary.API.Services;
+using CourseLibrary.API.Services.V1.Authors;
+using CourseLibrary.API.Services.V1.Courses;
+using CourseLibrary.API.Services.V1.PropertyMappings;
+using CourseLibrary.API.Services.V1.Users;
+using FluentValidation;
+using FluentValidation.AspNetCore;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace CourseLibrary.API.IoC;
@@ -12,12 +22,14 @@ internal static class StartupHelperExtensions
 {
     public static WebApplication ConfigureServices(this WebApplicationBuilder builder)
     {
-        builder.Services.AddControllers();
-
-        // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-        builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen();
-        builder.Services.AddDbContext<StorageBroker>(ServiceLifetime.Scoped);
+        builder.Services.RegisterDependencies()
+            .RegisterDbContext()
+            .RegisterAutoMapper()
+            .RegisterApiVersioning()
+            .AddEndpointsApiExplorer()
+            .RegisterSwagger()
+            .RegisterFluentValidation()
+            .AddControllers();
 
         return builder.Build();
     }
@@ -151,4 +163,78 @@ internal static class StartupHelperExtensions
                 return Bogus.DataSets.Name.Gender.Male;
         }
     }
+
+    private static IServiceCollection RegisterDependencies(this IServiceCollection services)
+    {
+        services.AddSingleton<IServicesLogicValidator, ServicesLogicValidator>();
+
+        services.AddScoped<IStorageBroker, StorageBroker>();
+        services.AddScoped<EndpointElapsedTimeFilter>();
+
+        services.AddTransient(typeof(ILoggingBroker<>), typeof(LoggingBroker<>));
+        services.AddTransient(typeof(IServicesExceptionsLogger<>), typeof(ServicesExceptionsLogger<>));
+        services.AddTransient<IPropertyMappingService, PropertyMappingService>();
+        services.AddTransient<IUserFoundationService, UserFoundationService>();
+        services.AddTransient<IUserProcessingService, UserProcessingService>();
+        services.AddTransient<IUserOrchestrationService, UserOrchestrationService>();
+        services.AddTransient<IAuthorFoundationService, AuthorFoundationService>();
+        services.AddTransient<IAuthorProcessingService, AuthorProcessingService>();
+        services.AddTransient<IAuthorOrchestrationService, AuthorOrchestrationService>();
+        services.AddTransient<ICourseFoundationService, CourseFoundationService>();
+        services.AddTransient<ICourseProcessingService, CourseProcessingService>();
+        services.AddTransient<ICourseOrchestrationService, CourseOrchestrationService>();
+
+        return services;
+    }
+
+    private static IServiceCollection RegisterDbContext(this IServiceCollection services)
+    {
+        services.AddDbContext<StorageBroker>(ServiceLifetime.Scoped);
+
+        return services;
+    }
+
+    private static IServiceCollection RegisterAutoMapper(this IServiceCollection services)
+    {
+        services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
+        return services;
+    }
+
+    public static IServiceCollection RegisterApiVersioning(this IServiceCollection services)
+    {
+        services.AddApiVersioning(options =>
+        {
+            options.AssumeDefaultVersionWhenUnspecified = true;
+            options.DefaultApiVersion = new ApiVersion(1, 0);
+            options.ReportApiVersions = true;
+        });
+
+        services.AddVersionedApiExplorer(options =>
+        {
+            options.GroupNameFormat = "'v'VVV";
+            options.SubstituteApiVersionInUrl = true;
+        });
+
+        return services;
+    }
+
+    private static IServiceCollection RegisterSwagger(this IServiceCollection services)
+    {
+        services.AddSwaggerGen();
+
+        return services;
+    }
+
+    private static IServiceCollection RegisterFluentValidation(this IServiceCollection services)
+    {
+        services.AddValidatorsFromAssemblyContaining<Program>()
+            .AddFluentValidationAutoValidation(options =>
+            {
+                options.DisableDataAnnotationsValidation = true;
+            });
+
+        return services;
+    }
+
 }

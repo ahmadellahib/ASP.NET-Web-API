@@ -32,6 +32,12 @@ internal partial class StorageBroker
         return result > 0;
     }
 
+    public async Task<int> DeleteCoursesByAuthorIdAsync(Guid authorId, CancellationToken cancellationToken)
+    {
+        return await Courses.Where(x => x.AuthorId == authorId)
+              .ExecuteDeleteAsync(cancellationToken);
+    }
+
     public IQueryable<Course> SelectAllCourses() =>
         Courses.AsQueryable();
 

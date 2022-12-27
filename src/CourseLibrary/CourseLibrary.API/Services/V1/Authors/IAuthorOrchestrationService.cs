@@ -1,8 +1,9 @@
 ﻿using CourseLibrary.API.Models.Authors;
+using CourseLibrary.API.Pagination;
 
 namespace CourseLibrary.API.Services.V1.Authors;
 
-public interface IAuthorFoundationService
+public interface IAuthorOrchestrationService
 {
     Task<Author> CreateAuthorAsync(Author author, CancellationToken cancellationToken);
 
@@ -12,5 +13,7 @@ public interface IAuthorFoundationService
 
     ValueTask<Author> RetrieveAuthorByIdAsync(Guid authorId, CancellationToken cancellationToken);
 
-    IQueryable<Author> RetrieveAllAuthors();
+    IEnumerable<Author> RetrieveAllAuthors();
+
+    PagedList<Author> SearchAuthors(AuthorResourceParameters authorResourceParameters);
 }

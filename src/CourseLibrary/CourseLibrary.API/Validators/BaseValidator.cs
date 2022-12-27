@@ -25,16 +25,13 @@ public abstract class BaseValidator<T> : AbstractValidator<T>
 
         if (_isConcurrencyAware)
         {
-            if (!_isNewEntity)
-            {
-                RuleFor(x => ((IConcurrencyAware)x!).ConcurrencyStamp)
-                   .NotNull()
-                   .WithMessage(StaticData.ValidationMessages.CannotBeNull)
-                   .NotEmpty()
-                   .WithMessage(StaticData.ValidationMessages.CannotBeEmpty)
-                   .MaximumLength(255)
-                   .WithMessage(StaticData.ValidationMessages.MaxLength);
-            }
+            RuleFor(x => ((IConcurrencyAware)x!).ConcurrencyStamp)
+                .NotNull()
+                .WithMessage(StaticData.ValidationMessages.CannotBeNull)
+                .NotEmpty()
+                .WithMessage(StaticData.ValidationMessages.CannotBeEmpty)
+                .MaximumLength(255)
+                .WithMessage(StaticData.ValidationMessages.MaxLength);
         }
 
         if (_isAuditable)

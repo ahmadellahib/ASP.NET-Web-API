@@ -24,14 +24,6 @@ internal partial class StorageBroker
         return userEntityEntry.Entity;
     }
 
-    public async Task<bool> DeleteUserAsync(User user, CancellationToken cancellationToken)
-    {
-        Users.Remove(user);
-        int result = await SaveChangesAsync(cancellationToken);
-
-        return result > 0;
-    }
-
     public IQueryable<User> SelectAllUsers() =>
         Users.AsQueryable();
 

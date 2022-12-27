@@ -1,4 +1,4 @@
-using CourseLibrary.API.IoC;
+﻿using CourseLibrary.API.IoC;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 

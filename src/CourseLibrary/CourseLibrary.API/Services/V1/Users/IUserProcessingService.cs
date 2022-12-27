@@ -2,7 +2,7 @@
 
 namespace CourseLibrary.API.Services.V1.Users;
 
-public interface IUserFoundationService
+public interface IUserProcessingService
 {
     Task<User> CreateUserAsync(User user, CancellationToken cancellationToken);
 
@@ -11,4 +11,6 @@ public interface IUserFoundationService
     ValueTask<User> RetrieveUserByIdAsync(Guid userId, CancellationToken cancellationToken);
 
     IQueryable<User> RetrieveAllUsers();
+
+    IQueryable<User> SearchUsers(UserResourceParameters userResourceParameters);
 }

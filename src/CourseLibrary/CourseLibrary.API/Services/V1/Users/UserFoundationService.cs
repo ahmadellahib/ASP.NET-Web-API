@@ -1,6 +1,5 @@
 ﻿using CourseLibrary.API.Brokers.Loggings;
 using CourseLibrary.API.Brokers.Storages;
-using CourseLibrary.API.Extensions;
 using CourseLibrary.API.Models.Exceptions;
 using CourseLibrary.API.Models.Users;
 using CourseLibrary.API.Services.V1.PropertyMappings;
@@ -16,13 +15,13 @@ public class UserFoundationService : IUserFoundationService
     private readonly IServicesLogicValidator _servicesLogicValidator;
     private readonly IPropertyMappingService _propertyMappingService;
     private readonly ILoggingBroker<UserFoundationService> _loggingBroker;
-    private readonly ServicesExceptionsLogger<UserFoundationService> _servicesExceptionsLogger;
+    private readonly IServicesExceptionsLogger<UserFoundationService> _servicesExceptionsLogger;
 
     public UserFoundationService(IStorageBroker storageBroker,
         IPropertyMappingService propertyMappingService,
         IServicesLogicValidator servicesLogicValidator,
         ILoggingBroker<UserFoundationService> loggingBroker,
-        ServicesExceptionsLogger<UserFoundationService> servicesExceptionsLogger)
+        IServicesExceptionsLogger<UserFoundationService> servicesExceptionsLogger)
     {
         _storageBroker = storageBroker ?? throw new ArgumentNullException(nameof(storageBroker));
         _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
@@ -36,8 +35,6 @@ public class UserFoundationService : IUserFoundationService
         try
         {
             _servicesLogicValidator.ValidateEntity(user, new UserValidator(true));
-
-            user.ConcurrencyStamp = Guid.NewGuid().ToString();
 
             return await _storageBroker.InsertUserAsync(user, cancellationToken);
         }
@@ -75,25 +72,11 @@ public class UserFoundationService : IUserFoundationService
         {
             _servicesLogicValidator.ValidateEntity(user, new UserValidator(false));
 
-            User? maybeUser = await _storageBroker.SelectUserByIdAsync(user.Id, cancellationToken);
-            _servicesLogicValidator.ValidateStorageEntity<User>(maybeUser, user.Id);
-            _servicesLogicValidator.ValidateEntityConcurrency<User>(user, maybeUser!);
-
-            user.ConcurrencyStamp = Guid.NewGuid().ToString();
-
             return await _storageBroker.UpdateUserAsync(user, cancellationToken);
         }
         catch (InvalidEntityException<User> invalidEntityException)
         {
             throw _servicesExceptionsLogger.CreateAndLogServiceException(invalidEntityException);
-        }
-        catch (NotFoundEntityException<User> notFoundEntityException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogValidationException(notFoundEntityException);
-        }
-        catch (EntityConcurrencyException<User> entityConcurrencyException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogValidationException(entityConcurrencyException);
         }
         catch (SqlException sqlException)
         {
@@ -108,41 +91,6 @@ public class UserFoundationService : IUserFoundationService
         catch (DbUpdateException dbUpdateException)
         {
             throw _servicesExceptionsLogger.CreateAndLogDependencyException(dbUpdateException);
-        }
-        catch (Exception exception) when (exception is OperationCanceledException || exception is TaskCanceledException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogCancellationException(exception);
-        }
-        catch (Exception exception)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogServiceException(exception);
-        }
-    }
-
-    public async Task RemoveUserByIdAsync(Guid userId, CancellationToken cancellationToken)
-    {
-        try
-        {
-            _servicesLogicValidator.ValidateParameter(userId, nameof(userId));
-
-            User? maybeUser = await _storageBroker.SelectUserByIdAsync(userId, cancellationToken);
-            _servicesLogicValidator.ValidateStorageEntity<User>(maybeUser, userId);
-
-            bool deleted = await _storageBroker.DeleteUserAsync(maybeUser!, cancellationToken);
-
-            if (!deleted)
-            {
-                string exceptionMsg = StaticData.ExceptionMessages.NoRowsWasEffectedByDeleting(nameof(User), userId);
-                throw new Exception(exceptionMsg);
-            }
-        }
-        catch (InvalidParameterException invalidIdException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogValidationException(invalidIdException);
-        }
-        catch (NotFoundEntityException<User> notFoundEntityException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogValidationException(notFoundEntityException);
         }
         catch (Exception exception) when (exception is OperationCanceledException || exception is TaskCanceledException)
         {
@@ -204,34 +152,5 @@ public class UserFoundationService : IUserFoundationService
         {
             throw _servicesExceptionsLogger.CreateAndLogServiceException(exception);
         }
-    }
-
-    public IQueryable<User> SearchUsers(UserResourceParameters userResourceParameters)
-    {
-        try
-        {
-            if (!_propertyMappingService.ValidMappingExistsFor<User, User>(userResourceParameters.OrderBy))
-            {
-                throw new ResourceParametersException($"Order by '{userResourceParameters.OrderBy}' is not valid property for User.");
-            }
-
-            IQueryable<User> collection = RetrieveAllUsers();
-
-            if (!string.IsNullOrEmpty(userResourceParameters.SearchQuery))
-            {
-                userResourceParameters.SearchQuery = userResourceParameters.SearchQuery.Trim();
-                collection = collection.Where(x => x.FirstName.Contains(userResourceParameters.SearchQuery) ||
-                    x.LastName.Contains(userResourceParameters.SearchQuery));
-            }
-
-            if (!string.IsNullOrWhiteSpace(userResourceParameters.OrderBy))
-            {
-                Dictionary<string, PropertyMappingValue> userPropertyMappingDictionary = _propertyMappingService.GetPropertyMapping<User, User>();
-                collection = collection.ApplySort(userResourceParameters.OrderBy, userPropertyMappingDictionary);
-            }
-
-            return collection;
-        }
-        catch (Exception exception) { throw _servicesExceptionsLogger.CreateAndLogServiceException(exception); }
     }
 }

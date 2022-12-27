@@ -1,15 +1,11 @@
-﻿using CourseLibrary.API.Models.Users;
+﻿using CourseLibrary.API.Contracts.Users;
 using FluentValidation;
 
 namespace CourseLibrary.API.Validators.Users;
 
-public class UserValidator : BaseValidator<User>
+public class UserForUpdateValidator : AbstractValidator<UserForUpdate>
 {
-    public UserValidator()
-        : this(false) { }
-
-    public UserValidator(bool isNewEntity)
-        : base(isNewEntity, false, true)
+    public UserForUpdateValidator()
     {
         RuleFor(x => x.Id)
             .NotEmpty()
@@ -30,5 +26,13 @@ public class UserValidator : BaseValidator<User>
         RuleFor(x => x.DateOfBirth)
             .NotNull()
             .WithMessage(StaticData.ValidationMessages.CannotBeNull);
+
+        RuleFor(x => x.ConcurrencyStamp)
+            .NotNull()
+            .WithMessage(StaticData.ValidationMessages.CannotBeNull)
+            .NotEmpty()
+            .WithMessage(StaticData.ValidationMessages.CannotBeEmpty)
+            .MaximumLength(255)
+            .WithMessage(StaticData.ValidationMessages.MaxLength);
     }
 }
