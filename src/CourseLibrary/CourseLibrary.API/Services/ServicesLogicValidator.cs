@@ -5,7 +5,7 @@ using FluentValidation.Results;
 
 namespace CourseLibrary.API.Services;
 
-public class ServicesLogicValidator : IServicesLogicValidator
+internal sealed class ServicesLogicValidator : IServicesLogicValidator
 {
     public void ValidateEntity<T>(T objectT, BaseValidator<T> validator)
     {

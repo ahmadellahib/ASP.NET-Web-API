@@ -2,7 +2,7 @@
 
 namespace CourseLibrary.API.Services;
 
-public interface IServicesExceptionsLogger<T> where T : class
+internal interface IServicesExceptionsLogger<T> where T : class
 {
     DependencyException<T> CreateAndLogCriticalConflictException(Exception exception);
     DependencyException<T> CreateAndLogCriticalDependencyException(Exception exception);

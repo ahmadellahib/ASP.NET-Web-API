@@ -5,7 +5,7 @@ using CourseLibrary.API.Services.V1.PropertyMappings;
 
 namespace CourseLibrary.API.Services.V1.Users;
 
-public class UserProcessingService : IUserProcessingService
+internal sealed class UserProcessingService : IUserProcessingService
 {
     private readonly IUserFoundationService _userFoundationService;
     private readonly IPropertyMappingService _propertyMappingService;

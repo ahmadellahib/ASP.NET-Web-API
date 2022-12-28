@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace CourseLibrary.API.Brokers.Storages;
 
-internal partial class StorageBroker
+internal sealed partial class StorageBroker
 {
     internal DbSet<User> Users { get; set; }
 

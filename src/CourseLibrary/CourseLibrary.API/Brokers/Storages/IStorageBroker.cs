@@ -1,3 +1,3 @@
 ﻿namespace CourseLibrary.API.Brokers.Storages;
-public partial interface IStorageBroker
+internal partial interface IStorageBroker
 { }

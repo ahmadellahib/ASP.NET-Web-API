@@ -3,7 +3,7 @@ using FluentValidation;
 
 namespace CourseLibrary.API.Validators.Users;
 
-public class UserValidator : BaseValidator<User>
+internal sealed class UserValidator : BaseValidator<User>
 {
     public UserValidator()
         : this(false) { }

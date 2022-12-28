@@ -6,7 +6,7 @@ using CourseLibrary.API.Services.V1.Users;
 
 namespace CourseLibrary.API.Services.V1.Courses;
 
-public class CourseProcessingService : ICourseProcessingService
+internal sealed class CourseProcessingService : ICourseProcessingService
 {
     private readonly ICourseFoundationService _courseFoundationService;
     private readonly IPropertyMappingService _propertyMappingService;

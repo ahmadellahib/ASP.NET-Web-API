@@ -1,6 +1,6 @@
 ﻿namespace CourseLibrary.API;
 
-public static class StaticData
+internal static class StaticData
 {
     public class ValidationMessages
     {

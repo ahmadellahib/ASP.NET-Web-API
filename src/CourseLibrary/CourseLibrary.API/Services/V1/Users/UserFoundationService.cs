@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CourseLibrary.API.Services.V1.Users;
 
-public class UserFoundationService : IUserFoundationService
+internal sealed class UserFoundationService : IUserFoundationService
 {
     private readonly IStorageBroker _storageBroker;
     private readonly IServicesLogicValidator _servicesLogicValidator;

@@ -5,7 +5,7 @@ using CourseLibrary.API.Services.V1.PropertyMappings;
 
 namespace CourseLibrary.API.Services.V1.Authors;
 
-public class AuthorProcessingService : IAuthorProcessingService
+internal sealed class AuthorProcessingService : IAuthorProcessingService
 {
     private readonly IAuthorFoundationService _authorFoundationService;
     private readonly IPropertyMappingService _propertyMappingService;

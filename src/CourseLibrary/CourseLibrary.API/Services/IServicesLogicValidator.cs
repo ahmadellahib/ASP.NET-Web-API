@@ -3,7 +3,7 @@ using CourseLibrary.API.Validators;
 
 namespace CourseLibrary.API.Services;
 
-public interface IServicesLogicValidator
+internal interface IServicesLogicValidator
 {
     void ValidateEntity<T>(T objectT, BaseValidator<T> validator);
 

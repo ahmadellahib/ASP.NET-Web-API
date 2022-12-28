@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace CourseLibrary.API.Brokers.Storages.Configurations;
 
-public class AuthorConfiguration : IEntityTypeConfiguration<Author>
+internal class AuthorConfiguration : IEntityTypeConfiguration<Author>
 {
     void IEntityTypeConfiguration<Author>.Configure(EntityTypeBuilder<Author> builder)
     {

@@ -61,6 +61,7 @@ dotnet_style_readonly_field = true:warning
 dotnet_style_qualification_for_field = false:silent
 dotnet_diagnostic.CA1051.severity = error
 dotnet_diagnostic.CA1823.severity = error
+dotnet_diagnostic.CA1852.severity = warning
 dotnet_code_quality_unused_parameters = all:error
 
 [*.cs]

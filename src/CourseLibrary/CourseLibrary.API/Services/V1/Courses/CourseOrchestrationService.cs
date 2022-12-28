@@ -4,7 +4,7 @@ using CourseLibrary.API.Pagination;
 
 namespace CourseLibrary.API.Services.V1.Courses;
 
-public class CourseOrchestrationService : ICourseOrchestrationService
+internal sealed class CourseOrchestrationService : ICourseOrchestrationService
 {
     private readonly ICourseProcessingService _courseProcessingService;
     private readonly IServicesLogicValidator _servicesLogicValidator;

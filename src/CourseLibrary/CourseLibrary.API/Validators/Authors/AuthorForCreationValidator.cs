@@ -3,7 +3,7 @@ using FluentValidation;
 
 namespace CourseLibrary.API.Validators.Authors;
 
-public class AuthorForCreationValidator : AbstractValidator<AuthorForCreation>
+internal sealed class AuthorForCreationValidator : AbstractValidator<AuthorForCreation>
 {
     public AuthorForCreationValidator()
     {

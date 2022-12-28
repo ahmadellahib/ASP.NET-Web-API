@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CourseLibrary.API.Services.V1.Courses;
 
-public class CourseFoundationService : ICourseFoundationService
+internal sealed class CourseFoundationService : ICourseFoundationService
 {
     private readonly IStorageBroker _storageBroker;
     private readonly IPropertyMappingService _propertyMappingService;

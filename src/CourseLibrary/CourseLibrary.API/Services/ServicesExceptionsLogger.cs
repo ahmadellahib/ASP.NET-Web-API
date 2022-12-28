@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 
 namespace CourseLibrary.API.Services;
 
-public class ServicesExceptionsLogger<T> : IServicesExceptionsLogger<T> where T : class
+internal sealed class ServicesExceptionsLogger<T> : IServicesExceptionsLogger<T> where T : class
 {
     private readonly ILoggingBroker<T> _loggingBroker;
     private static readonly Regex UniqueConstraintRegex = new("'([a-zA-Z0-9]*)_([a-zA-Z0-9]*)_([a-zA-Z0-9]*)'", RegexOptions.Compiled);

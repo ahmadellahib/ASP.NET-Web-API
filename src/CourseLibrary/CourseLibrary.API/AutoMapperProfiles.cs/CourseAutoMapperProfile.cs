@@ -4,7 +4,7 @@ using CourseLibrary.API.Models.Courses;
 
 namespace CourseLibrary.API.AutoMapperProfiles.cs;
 
-public class CourseAutoMapperProfile : Profile
+internal sealed class CourseAutoMapperProfile : Profile
 {
     public CourseAutoMapperProfile()
     {

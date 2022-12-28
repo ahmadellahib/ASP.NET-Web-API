@@ -5,7 +5,7 @@ using CourseLibrary.API.Services.V1.Courses;
 
 namespace CourseLibrary.API.Services.V1.Authors;
 
-public class AuthorOrchestrationService : IAuthorOrchestrationService
+internal sealed class AuthorOrchestrationService : IAuthorOrchestrationService
 {
     private readonly IAuthorProcessingService _authorProcessingService;
     private readonly IServicesLogicValidator _servicesLogicValidator;

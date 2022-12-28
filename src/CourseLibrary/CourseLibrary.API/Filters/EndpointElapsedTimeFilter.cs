@@ -4,7 +4,7 @@ using System.Diagnostics;
 
 namespace CourseLibrary.API.Filters;
 
-public class EndpointElapsedTimeFilter : IAsyncActionFilter
+internal sealed class EndpointElapsedTimeFilter : IAsyncActionFilter
 {
     private Stopwatch? stopWatch;
     private readonly ILoggingBroker<EndpointElapsedTimeFilter> _logger;
