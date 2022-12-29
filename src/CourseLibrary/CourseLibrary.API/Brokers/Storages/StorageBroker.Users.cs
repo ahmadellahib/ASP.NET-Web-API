@@ -24,9 +24,9 @@ internal sealed partial class StorageBroker
         return userEntityEntry.Entity;
     }
 
-    public IQueryable<User> SelectAllUsers() =>
-        Users.AsQueryable();
-
     public async ValueTask<User?> SelectUserByIdAsync(Guid userId, CancellationToken cancellationToken) =>
          await Users.FindAsync(new object[] { userId }, cancellationToken);
+
+    public IQueryable<User> SelectAllUsers() =>
+        Users.AsQueryable();
 }

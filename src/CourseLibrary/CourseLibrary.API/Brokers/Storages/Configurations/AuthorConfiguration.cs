@@ -13,8 +13,7 @@ internal class AuthorConfiguration : IEntityTypeConfiguration<Author>
         builder.HasIndex(a => a.UserId)
             .IsUnique();
 
-        builder.Property(a => a.MainCategory)
-            .HasMaxLength(50)
+        builder.Property(a => a.MainCategoryId)
             .IsRequired();
 
         builder.Property(a => a.ConcurrencyStamp)

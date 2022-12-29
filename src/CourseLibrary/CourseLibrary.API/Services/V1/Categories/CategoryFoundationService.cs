@@ -1,44 +1,42 @@
-﻿using CourseLibrary.API.Brokers.Loggings;
+﻿using CourseLibrary.API;
+using CourseLibrary.API.Brokers.Loggings;
 using CourseLibrary.API.Brokers.Storages;
-using CourseLibrary.API.Models.Authors;
+using CourseLibrary.API.Models.Categories;
 using CourseLibrary.API.Models.Exceptions;
-using CourseLibrary.API.Services.V1.PropertyMappings;
-using CourseLibrary.API.Validators.Authors;
+using CourseLibrary.API.Services;
+using CourseLibrary.API.Validators.Categories;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
-namespace CourseLibrary.API.Services.V1.Authors;
+namespace CategoryLibrary.API.Services.V1.Categories;
 
-internal sealed class AuthorFoundationService : IAuthorFoundationService
+internal sealed class CategoryFoundationService : ICategoryFoundationService
 {
     private readonly IStorageBroker _storageBroker;
     private readonly IServicesLogicValidator _servicesLogicValidator;
-    private readonly IPropertyMappingService _propertyMappingService;
-    private readonly ILoggingBroker<AuthorFoundationService> _loggingBroker;
-    private readonly IServicesExceptionsLogger<AuthorFoundationService> _servicesExceptionsLogger;
+    private readonly ILoggingBroker<CategoryFoundationService> _loggingBroker;
+    private readonly IServicesExceptionsLogger<CategoryFoundationService> _servicesExceptionsLogger;
 
-    public AuthorFoundationService(IStorageBroker storageBroker,
-        IPropertyMappingService propertyMappingService,
+    public CategoryFoundationService(IStorageBroker storageBroker,
         IServicesLogicValidator servicesLogicValidator,
-        ILoggingBroker<AuthorFoundationService> loggingBroker,
-        IServicesExceptionsLogger<AuthorFoundationService> servicesExceptionsLogger)
+        ILoggingBroker<CategoryFoundationService> loggingBroker,
+        IServicesExceptionsLogger<CategoryFoundationService> servicesExceptionsLogger)
     {
         _storageBroker = storageBroker ?? throw new ArgumentNullException(nameof(storageBroker));
-        _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
         _servicesLogicValidator = servicesLogicValidator ?? throw new ArgumentNullException(nameof(servicesLogicValidator));
         _loggingBroker = loggingBroker ?? throw new ArgumentNullException(nameof(loggingBroker));
         _servicesExceptionsLogger = servicesExceptionsLogger ?? throw new ArgumentNullException(nameof(servicesExceptionsLogger));
     }
 
-    public async Task<Author> CreateAuthorAsync(Author author, CancellationToken cancellationToken)
+    public async Task<Category> CreateCategoryAsync(Category category, CancellationToken cancellationToken)
     {
         try
         {
-            _servicesLogicValidator.ValidateEntity(author, new AuthorValidator(true));
+            _servicesLogicValidator.ValidateEntity(category, new CategoryValidator(true));
 
-            return await _storageBroker.InsertAuthorAsync(author, cancellationToken);
+            return await _storageBroker.InsertCategoryAsync(category, cancellationToken);
         }
-        catch (InvalidEntityException<Author> invalidEntityException)
+        catch (InvalidEntityException<Category> invalidEntityException)
         {
             throw _servicesExceptionsLogger.CreateAndLogServiceException(invalidEntityException);
         }
@@ -48,7 +46,7 @@ internal sealed class AuthorFoundationService : IAuthorFoundationService
         }
         catch (DbUpdateConcurrencyException dbUpdateConcurrencyException)
         {
-            LockedEntityException<Author> lockedEntityException = new(dbUpdateConcurrencyException);
+            LockedEntityException<Category> lockedEntityException = new(dbUpdateConcurrencyException);
 
             throw _servicesExceptionsLogger.CreateAndLogDependencyException(lockedEntityException);
         }
@@ -66,15 +64,15 @@ internal sealed class AuthorFoundationService : IAuthorFoundationService
         }
     }
 
-    public async Task<Author> ModifyAuthorAsync(Author author, CancellationToken cancellationToken)
+    public async Task<Category> ModifyCategoryAsync(Category category, CancellationToken cancellationToken)
     {
         try
         {
-            _servicesLogicValidator.ValidateEntity(author, new AuthorValidator(false));
+            _servicesLogicValidator.ValidateEntity(category, new CategoryValidator(false));
 
-            return await _storageBroker.UpdateAuthorAsync(author, cancellationToken);
+            return await _storageBroker.UpdateCategoryAsync(category, cancellationToken);
         }
-        catch (InvalidEntityException<Author> invalidEntityException)
+        catch (InvalidEntityException<Category> invalidEntityException)
         {
             throw _servicesExceptionsLogger.CreateAndLogServiceException(invalidEntityException);
         }
@@ -84,7 +82,7 @@ internal sealed class AuthorFoundationService : IAuthorFoundationService
         }
         catch (DbUpdateConcurrencyException dbUpdateConcurrencyException)
         {
-            LockedEntityException<Author> lockedEntityException = new(dbUpdateConcurrencyException);
+            LockedEntityException<Category> lockedEntityException = new(dbUpdateConcurrencyException);
 
             throw _servicesExceptionsLogger.CreateAndLogDependencyException(lockedEntityException);
         }
@@ -102,28 +100,22 @@ internal sealed class AuthorFoundationService : IAuthorFoundationService
         }
     }
 
-    public async Task RemoveAuthorByIdAsync(Guid authorId, CancellationToken cancellationToken)
+    public async ValueTask<Category> RetrieveCategoryByIdAsync(Guid categoryId, CancellationToken cancellationToken)
     {
         try
         {
-            _servicesLogicValidator.ValidateParameter(authorId, nameof(authorId));
+            _servicesLogicValidator.ValidateParameter(categoryId, nameof(categoryId));
 
-            Author? maybeAuthor = await _storageBroker.SelectAuthorByIdAsync(authorId, cancellationToken);
-            _servicesLogicValidator.ValidateStorageEntity<Author>(maybeAuthor, authorId);
+            Category? storageCategory = await _storageBroker.SelectCategoryByIdAsync(categoryId, cancellationToken);
+            _servicesLogicValidator.ValidateStorageEntity<Category>(storageCategory, categoryId);
 
-            bool deleted = await _storageBroker.DeleteAuthorAsync(maybeAuthor!, cancellationToken);
-
-            if (!deleted)
-            {
-                string exceptionMsg = StaticData.ExceptionMessages.NoRowsWasEffectedByDeleting(nameof(Author), authorId);
-                throw new Exception(exceptionMsg);
-            }
+            return storageCategory!;
         }
         catch (InvalidParameterException invalidIdException)
         {
             throw _servicesExceptionsLogger.CreateAndLogValidationException(invalidIdException);
         }
-        catch (NotFoundEntityException<Author> notFoundEntityException)
+        catch (NotFoundEntityException<Category> notFoundEntityException)
         {
             throw _servicesExceptionsLogger.CreateAndLogValidationException(notFoundEntityException);
         }
@@ -137,47 +129,18 @@ internal sealed class AuthorFoundationService : IAuthorFoundationService
         }
     }
 
-    public async ValueTask<Author> RetrieveAuthorByIdAsync(Guid authorId, CancellationToken cancellationToken)
+    public IQueryable<Category> RetrieveAllCategories()
     {
         try
         {
-            _servicesLogicValidator.ValidateParameter(authorId, nameof(authorId));
+            IQueryable<Category> storageCategories = _storageBroker.SelectAllCategories();
 
-            Author? storageAuthor = await _storageBroker.SelectAuthorByIdAsync(authorId, cancellationToken);
-            _servicesLogicValidator.ValidateStorageEntity<Author>(storageAuthor, authorId);
-
-            return storageAuthor!;
-        }
-        catch (InvalidParameterException invalidIdException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogValidationException(invalidIdException);
-        }
-        catch (NotFoundEntityException<Author> notFoundEntityException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogValidationException(notFoundEntityException);
-        }
-        catch (Exception exception) when (exception is OperationCanceledException || exception is TaskCanceledException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogCancellationException(exception);
-        }
-        catch (Exception exception)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogServiceException(exception);
-        }
-    }
-
-    public IQueryable<Author> RetrieveAllAuthors()
-    {
-        try
-        {
-            IQueryable<Author> storageAuthors = _storageBroker.SelectAllAuthors();
-
-            if (!storageAuthors.Any())
+            if (!storageCategories.Any())
             {
                 _loggingBroker.LogWarning(StaticData.WarningMessages.NoEntitiesFoundInStorage);
             }
 
-            return storageAuthors;
+            return storageCategories;
         }
         catch (SqlException sqlException)
         {

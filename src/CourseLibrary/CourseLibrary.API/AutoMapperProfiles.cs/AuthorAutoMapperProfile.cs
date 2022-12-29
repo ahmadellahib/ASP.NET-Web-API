@@ -8,7 +8,8 @@ internal sealed class AuthorAutoMapperProfile : Profile
 {
     public AuthorAutoMapperProfile()
     {
-        CreateMap<Author, AuthorDto>();
+        CreateMap<Author, AuthorDto>()
+            .ForMember(author => author.MainCategory, opt => opt.MapFrom(authorDto => authorDto.MainCategory.Name));
         CreateMap<AuthorForCreation, Author>();
         CreateMap<AuthorForUpdate, Author>();
     }

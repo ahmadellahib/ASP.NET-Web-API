@@ -3,5 +3,5 @@
 public class AuthorForCreation
 {
     public Guid UserId { get; set; }
-    public string MainCategory { get; set; } = string.Empty;
+    public Guid MainCategoryId { get; set; }
 }

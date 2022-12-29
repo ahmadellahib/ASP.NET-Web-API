@@ -19,7 +19,7 @@ internal sealed class AuthorValidator : BaseValidator<Author>
             .NotEmpty()
             .WithMessage(StaticData.ValidationMessages.CannotBeEmpty);
 
-        RuleFor(x => x.MainCategory)
+        RuleFor(x => x.MainCategoryId)
             .NotEmpty()
             .WithMessage(StaticData.ValidationMessages.CannotBeEmpty);
     }

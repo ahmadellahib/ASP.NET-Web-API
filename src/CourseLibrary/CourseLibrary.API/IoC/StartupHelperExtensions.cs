@@ -1,13 +1,16 @@
 ﻿using Bogus;
+using CategoryLibrary.API.Services.V1.Categories;
 using CourseLibrary.API.Brokers.Loggings;
 using CourseLibrary.API.Brokers.Storages;
 using CourseLibrary.API.Filters;
 using CourseLibrary.API.Models.Authors;
+using CourseLibrary.API.Models.Categories;
 using CourseLibrary.API.Models.Courses;
 using CourseLibrary.API.Models.Enums;
 using CourseLibrary.API.Models.Users;
 using CourseLibrary.API.Services;
 using CourseLibrary.API.Services.V1.Authors;
+using CourseLibrary.API.Services.V1.Categories;
 using CourseLibrary.API.Services.V1.Courses;
 using CourseLibrary.API.Services.V1.PropertyMappings;
 using CourseLibrary.API.Services.V1.Users;
@@ -102,7 +105,7 @@ internal static class StartupHelperExtensions
             //Set the randomizer seed if you wish to generate repeatable data sets.
             Randomizer.Seed = new Random(8675309);
 
-            string[] category = new[] { "Science", "Cultural Studies", "Art Studio", "Wellness and Health", "Creative Writing", "Business", "Technology and Data Science" };
+            string[] categoriesNames = new[] { "Science", "Cultural Studies", "Art Studio", "Wellness and Health", "Creative Writing", "Business", "Technology and Data Science" };
 
             Faker<User> testUsers = new Faker<User>()
                 .StrictMode(false)
@@ -117,10 +120,24 @@ internal static class StartupHelperExtensions
             await storageBroker.Users.AddRangeAsync(users);
             await storageBroker.SaveChangesAsync();
 
+            int index = 0;
+            Faker<Category> testCategories = new Faker<Category>()
+                .StrictMode(false)
+                .RuleFor(x => x.Name, f => categoriesNames[index++])
+                .RuleFor(x => x.CreatedDate, f => DateTimeOffset.UtcNow.AddDays(f.Random.Number(-100, -1)))
+                .RuleFor(x => x.UpdatedDate, f => DateTimeOffset.UtcNow.AddDays(f.Random.Number(1, 100)))
+                .RuleFor(x => x.CreatedById, f => f.PickRandom(users).Id)
+                .RuleFor(x => x.UpdatedById, f => f.PickRandom(users).Id)
+                .RuleFor(x => x.ConcurrencyStamp, f => f.Random.Guid().ToString());
+
+            List<Category> categories = testCategories.Generate(7);
+            await storageBroker.Categories.AddRangeAsync(categories);
+            await storageBroker.SaveChangesAsync();
+
             Faker<Author> testAuthors = new Faker<Author>()
                 .StrictMode(false)
                 .RuleFor(x => x.UserId, f => f.PickRandom(users).Id)
-                .RuleFor(x => x.MainCategory, f => f.PickRandom(category))
+                .RuleFor(x => x.MainCategoryId, f => f.PickRandom(categories).Id)
                 .RuleFor(x => x.ConcurrencyStamp, f => f.Random.Guid().ToString());
 
             List<Author> authors = testAuthors.Generate(200)
@@ -183,6 +200,9 @@ internal static class StartupHelperExtensions
         services.AddTransient<ICourseFoundationService, CourseFoundationService>();
         services.AddTransient<ICourseProcessingService, CourseProcessingService>();
         services.AddTransient<ICourseOrchestrationService, CourseOrchestrationService>();
+        services.AddTransient<ICategoryFoundationService, CategoryFoundationService>();
+        services.AddTransient<ICategoryProcessingService, CategoryProcessingService>();
+        services.AddTransient<ICategoryOrchestrationService, CategoryOrchestrationService>();
 
         return services;
     }

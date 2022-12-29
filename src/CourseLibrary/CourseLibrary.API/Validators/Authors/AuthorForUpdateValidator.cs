@@ -11,7 +11,7 @@ internal sealed class AuthorForUpdateValidator : AbstractValidator<AuthorForUpda
            .NotEmpty()
            .WithMessage(StaticData.ValidationMessages.CannotBeEmpty);
 
-        RuleFor(x => x.MainCategory)
+        RuleFor(x => x.MainCategoryId)
             .NotEmpty()
             .WithMessage(StaticData.ValidationMessages.CannotBeEmpty);
 

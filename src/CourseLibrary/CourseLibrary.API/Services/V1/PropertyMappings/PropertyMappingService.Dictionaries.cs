@@ -22,8 +22,7 @@ public partial class PropertyMappingService
 
     private readonly Dictionary<string, PropertyMappingValue> _authorPropertyMapping = new(StringComparer.OrdinalIgnoreCase)
     {
-        { nameof(Author.Id), new PropertyMappingValue(new List<string>() { nameof(Author.Id) }) },
-        { nameof(Author.MainCategory), new PropertyMappingValue(new List<string>() { nameof(Author.MainCategory) }) }
+        { nameof(Author.Id), new PropertyMappingValue(new List<string>() { nameof(Author.Id) }) }
     };
 
     private readonly Dictionary<string, PropertyMappingValue> _coursePropertyMapping = new(StringComparer.OrdinalIgnoreCase)

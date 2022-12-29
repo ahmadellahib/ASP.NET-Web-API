@@ -38,9 +38,9 @@ internal sealed partial class StorageBroker
               .ExecuteDeleteAsync(cancellationToken);
     }
 
-    public IQueryable<Course> SelectAllCourses() =>
-        Courses.AsQueryable();
-
     public async ValueTask<Course?> SelectCourseByIdAsync(Guid courseId, CancellationToken cancellationToken) =>
          await Courses.FindAsync(new object[] { courseId }, cancellationToken);
+
+    public IQueryable<Course> SelectAllCourses() =>
+        Courses.AsQueryable();
 }

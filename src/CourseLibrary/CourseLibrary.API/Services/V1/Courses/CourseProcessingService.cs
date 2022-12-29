@@ -27,7 +27,7 @@ internal sealed class CourseProcessingService : ICourseProcessingService
         {
             course.Id = Guid.NewGuid();
             course.CreatedDate = DateTimeOffset.UtcNow;
-            course.UpdatedDate = DateTimeOffset.UtcNow;
+            course.UpdatedDate = course.CreatedDate;
             course.UpdatedById = course.CreatedById;
             course.ConcurrencyStamp = Guid.NewGuid().ToString();
 

@@ -1,4 +1,5 @@
-﻿using CourseLibrary.API.Models.Courses;
+﻿using CourseLibrary.API.Models.Categories;
+using CourseLibrary.API.Models.Courses;
 using CourseLibrary.API.Models.Enums;
 
 namespace CourseLibrary.API.Models.Users;
@@ -15,4 +16,6 @@ public class User : IConcurrencyAware
 
     public virtual IEnumerable<Course>? CreatedCourses { get; set; }
     public virtual IEnumerable<Course>? UpdatedCourses { get; set; }
+    public virtual IEnumerable<Category>? CreatedCategories { get; set; }
+    public virtual IEnumerable<Category>? UpdatedCategories { get; set; }
 }

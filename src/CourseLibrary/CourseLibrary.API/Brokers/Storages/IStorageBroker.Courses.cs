@@ -8,6 +8,6 @@ internal partial interface IStorageBroker
     Task<Course> UpdateCourseAsync(Course course, CancellationToken cancellationToken);
     Task<bool> DeleteCourseAsync(Course course, CancellationToken cancellationToken);
     Task<int> DeleteCoursesByAuthorIdAsync(Guid authorId, CancellationToken cancellationToken);
-    IQueryable<Course> SelectAllCourses();
     ValueTask<Course?> SelectCourseByIdAsync(Guid courseId, CancellationToken cancellationToken);
+    IQueryable<Course> SelectAllCourses();
 }

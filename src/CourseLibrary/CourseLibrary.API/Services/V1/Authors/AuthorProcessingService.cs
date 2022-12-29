@@ -79,12 +79,6 @@ internal sealed class AuthorProcessingService : IAuthorProcessingService
 
             IQueryable<Author> collection = RetrieveAllAuthors();
 
-            if (!string.IsNullOrEmpty(authorResourceParameters.SearchQuery))
-            {
-                authorResourceParameters.SearchQuery = authorResourceParameters.SearchQuery.Trim();
-                collection = collection.Where(x => x.MainCategory.Contains(authorResourceParameters.SearchQuery));
-            }
-
             if (!string.IsNullOrWhiteSpace(authorResourceParameters.OrderBy))
             {
                 Dictionary<string, PropertyMappingValue> authorPropertyMappingDictionary = _propertyMappingService.GetPropertyMapping<Author, Author>();

@@ -9,7 +9,7 @@ internal sealed class CourseValidator : BaseValidator<Course>
         : this(false) { }
 
     public CourseValidator(bool isNewEntity)
-        : base(isNewEntity, false, true)
+        : base(isNewEntity, true, true)
     {
         RuleFor(x => x.Id)
             .NotEmpty()

@@ -33,20 +33,60 @@ namespace CourseLibrary.API.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
-                    b.Property<string>("MainCategory")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                    b.Property<Guid>("MainCategoryId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("MainCategoryId");
+
                     b.HasIndex("UserId")
                         .IsUnique();
 
                     b.ToTable("Authors");
+                });
+
+            modelBuilder.Entity("CourseLibrary.API.Models.Categories.Category", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<Guid>("CreatedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<Guid>("UpdatedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("UpdatedDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedById");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.HasIndex("UpdatedById");
+
+                    b.ToTable("Categories");
                 });
 
             modelBuilder.Entity("CourseLibrary.API.Models.Courses.Course", b =>
@@ -132,13 +172,40 @@ namespace CourseLibrary.API.Migrations
 
             modelBuilder.Entity("CourseLibrary.API.Models.Authors.Author", b =>
                 {
+                    b.HasOne("CourseLibrary.API.Models.Categories.Category", "MainCategory")
+                        .WithMany()
+                        .HasForeignKey("MainCategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("CourseLibrary.API.Models.Users.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("MainCategory");
+
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("CourseLibrary.API.Models.Categories.Category", b =>
+                {
+                    b.HasOne("CourseLibrary.API.Models.Users.User", "CreatedBy")
+                        .WithMany("CreatedCategories")
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("CourseLibrary.API.Models.Users.User", "UpdatedBy")
+                        .WithMany("UpdatedCategories")
+                        .HasForeignKey("UpdatedById")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("CreatedBy");
+
+                    b.Navigation("UpdatedBy");
                 });
 
             modelBuilder.Entity("CourseLibrary.API.Models.Courses.Course", b =>
@@ -175,7 +242,11 @@ namespace CourseLibrary.API.Migrations
 
             modelBuilder.Entity("CourseLibrary.API.Models.Users.User", b =>
                 {
+                    b.Navigation("CreatedCategories");
+
                     b.Navigation("CreatedCourses");
+
+                    b.Navigation("UpdatedCategories");
 
                     b.Navigation("UpdatedCourses");
                 });
