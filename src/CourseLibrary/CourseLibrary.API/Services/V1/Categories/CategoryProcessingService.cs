@@ -1,7 +1,6 @@
 ﻿using CategoryLibrary.API.Services.V1.Categories;
 using CourseLibrary.API.Models.Categories;
 using CourseLibrary.API.Models.Exceptions;
-using CourseLibrary.API.Services.V1.Users;
 
 namespace CourseLibrary.API.Services.V1.Categories;
 
@@ -32,8 +31,8 @@ internal sealed class CategoryProcessingService : ICategoryProcessingService
         catch (CancellationException) { throw; }
         catch (ResourceParametersException) { throw; }
         catch (ValidationException) { throw; }
-        catch (DependencyException<UserFoundationService>) { throw; }
-        catch (ServiceException<UserFoundationService>) { throw; }
+        catch (DependencyException<CategoryFoundationService>) { throw; }
+        catch (ServiceException<CategoryFoundationService>) { throw; }
         catch (Exception exception)
         {
             throw _servicesExceptionsLogger.CreateAndLogServiceException(exception);
@@ -52,8 +51,8 @@ internal sealed class CategoryProcessingService : ICategoryProcessingService
         catch (CancellationException) { throw; }
         catch (ResourceParametersException) { throw; }
         catch (ValidationException) { throw; }
-        catch (DependencyException<UserFoundationService>) { throw; }
-        catch (ServiceException<UserFoundationService>) { throw; }
+        catch (DependencyException<CategoryFoundationService>) { throw; }
+        catch (ServiceException<CategoryFoundationService>) { throw; }
         catch (Exception exception)
         {
             throw _servicesExceptionsLogger.CreateAndLogServiceException(exception);
