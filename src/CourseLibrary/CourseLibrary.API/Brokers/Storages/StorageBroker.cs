@@ -35,9 +35,9 @@ internal sealed partial class StorageBroker : DbContext, IStorageBroker
 
         if (_env.IsDevelopment())
         {
-            optionsBuilder.EnableDetailedErrors()
-                .EnableSensitiveDataLogging()
-                .LogTo(Console.WriteLine);
+            //optionsBuilder.EnableDetailedErrors()
+            //    .EnableSensitiveDataLogging()
+            //    .LogTo(Console.WriteLine);
         }
     }
 }
