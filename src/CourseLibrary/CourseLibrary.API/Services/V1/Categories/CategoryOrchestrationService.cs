@@ -25,7 +25,7 @@ internal sealed class CategoryOrchestrationService : ICategoryOrchestrationServi
         {
             if (_categoryProcessingService.RetrieveAllCategories().Where(x => x.Name == category.Name).Any())
             {
-                throw new CategoryWithSameNameAlreadyExists();
+                throw new CategoryWithSameNameAlreadyExistsException();
             }
 
             return await _categoryProcessingService.CreateCategoryAsync(category, cancellationToken);
@@ -35,9 +35,9 @@ internal sealed class CategoryOrchestrationService : ICategoryOrchestrationServi
         catch (ValidationException) { throw; }
         catch (DependencyException<CategoryFoundationService>) { throw; }
         catch (ServiceException<CategoryFoundationService>) { throw; }
-        catch (CategoryWithSameNameAlreadyExists categoryWithSameNameAlreadyExists)
+        catch (CategoryWithSameNameAlreadyExistsException categoryWithSameNameAlreadyExistsException)
         {
-            throw _servicesExceptionsLogger.CreateAndLogValidationException(categoryWithSameNameAlreadyExists);
+            throw _servicesExceptionsLogger.CreateAndLogValidationException(categoryWithSameNameAlreadyExistsException);
         }
         catch (Exception exception)
         {
@@ -51,7 +51,7 @@ internal sealed class CategoryOrchestrationService : ICategoryOrchestrationServi
         {
             if (_categoryProcessingService.RetrieveAllCategories().Where(x => x.Id != category.Id && x.Name == category.Name).Any())
             {
-                throw new CategoryWithSameNameAlreadyExists();
+                throw new CategoryWithSameNameAlreadyExistsException();
             }
 
             Category storageCategory = await _categoryProcessingService.RetrieveCategoryByIdAsync(category.Id, cancellationToken);
@@ -71,9 +71,9 @@ internal sealed class CategoryOrchestrationService : ICategoryOrchestrationServi
         {
             throw _servicesExceptionsLogger.CreateAndLogValidationException(entityConcurrencyException);
         }
-        catch (CategoryWithSameNameAlreadyExists categoryWithSameNameAlreadyExists)
+        catch (CategoryWithSameNameAlreadyExistsException categoryWithSameNameAlreadyExistsException)
         {
-            throw _servicesExceptionsLogger.CreateAndLogValidationException(categoryWithSameNameAlreadyExists);
+            throw _servicesExceptionsLogger.CreateAndLogValidationException(categoryWithSameNameAlreadyExistsException);
         }
         catch (Exception exception)
         {
