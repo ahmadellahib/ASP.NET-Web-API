@@ -39,8 +39,10 @@ internal sealed partial class StorageBroker
     }
 
     public async ValueTask<Course?> SelectCourseByIdAsync(Guid courseId, CancellationToken cancellationToken) =>
-         await Courses.FindAsync(new object[] { courseId }, cancellationToken);
+         await Courses.Include(x => x.Author.User)
+                      .SingleOrDefaultAsync(x => x.Id == courseId, cancellationToken);
 
     public IQueryable<Course> SelectAllCourses() =>
-        Courses.AsQueryable();
+        Courses.Include(course => course.Author.User)
+               .AsQueryable();
 }

@@ -8,10 +8,12 @@ namespace CourseLibrary.API.Services;
 
 internal sealed class ServicesExceptionsLogger<T> : IServicesExceptionsLogger<T> where T : class
 {
+    private const RegexOptions _regexOptions = RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.NonBacktracking | RegexOptions.ExplicitCapture;
+
     private readonly ILoggingBroker<T> _loggingBroker;
-    private static readonly Regex UniqueConstraintRegex = new("'([a-zA-Z0-9]*)_([a-zA-Z0-9]*)_([a-zA-Z0-9]*)'", RegexOptions.Compiled);
-    private static readonly Regex PrimaryKeyConstraintRegex = new("'PK_([a-zA-Z0-9]*)'", RegexOptions.Compiled);
-    private static readonly Regex ForeignKeyConstraintRegex = new("FK_([a-zA-Z0-9]*)_([a-zA-Z0-9]*)_([a-zA-Z0-9]*)", RegexOptions.Compiled);
+    private static readonly Regex UniqueConstraintRegex = new("'([a-zA-Z0-9]*)_([a-zA-Z0-9]*)_([a-zA-Z0-9]*)'", _regexOptions, TimeSpan.FromMilliseconds(50));
+    private static readonly Regex PrimaryKeyConstraintRegex = new("'PK_([a-zA-Z0-9]*)'", _regexOptions, TimeSpan.FromMilliseconds(50));
+    private static readonly Regex ForeignKeyConstraintRegex = new("FK_([a-zA-Z0-9]*)_([a-zA-Z0-9]*)_([a-zA-Z0-9]*)", _regexOptions, TimeSpan.FromMilliseconds(50));
 
     public ServicesExceptionsLogger(ILoggingBroker<T> loggingBroker)
     {

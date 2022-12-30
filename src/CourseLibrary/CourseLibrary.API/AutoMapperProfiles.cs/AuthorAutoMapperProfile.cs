@@ -9,8 +9,12 @@ internal sealed class AuthorAutoMapperProfile : Profile
     public AuthorAutoMapperProfile()
     {
         CreateMap<Author, AuthorDto>()
-            .ForMember(author => author.MainCategory, opt => opt.MapFrom(authorDto => authorDto.MainCategory.Name));
+            .ForMember(authorDto => authorDto.FirstName, opt => opt.MapFrom(author => author.User.FirstName))
+            .ForMember(authorDto => authorDto.LastName, opt => opt.MapFrom(author => author.User.LastName))
+            .ForMember(authorDto => authorDto.MainCategory, opt => opt.MapFrom(author => author.MainCategory.Name));
+
         CreateMap<AuthorForCreation, Author>();
+
         CreateMap<AuthorForUpdate, Author>();
     }
 }
