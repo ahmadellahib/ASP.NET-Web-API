@@ -1,7 +1,9 @@
 ﻿using CourseLibrary.API.Models.Users;
+using System.Diagnostics;
 
 namespace CourseLibrary.API.Models.Categories;
 
+[DebuggerDisplay("{Name,nq}")]
 public class Category : IConcurrencyAware, IAuditable
 {
     public Guid Id { get; set; }

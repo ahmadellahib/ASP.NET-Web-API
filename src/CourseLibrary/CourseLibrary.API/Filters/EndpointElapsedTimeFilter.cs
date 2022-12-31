@@ -17,21 +17,16 @@ internal sealed class EndpointElapsedTimeFilter : IAsyncActionFilter
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
         // Do something before the action executes.
-        stopWatch = new();
-        stopWatch.Start();
+        stopWatch = Stopwatch.StartNew();
 
         await next();
 
         // Do something after the action executes.
-        stopWatch!.Stop();
-        TimeSpan ts = stopWatch.Elapsed;
+        stopWatch.Stop();
 
-        string _elapsedTimeMessage = String.Format("Elapsed time for '{0}' response: {1:00}:{2:00}:{3:00}.{4:00}",
+        string _elapsedTimeMessage = String.Format("Elapsed time for '{0}' response: {1}ms",
                                context.HttpContext.Request.Path,
-                               ts.Hours,
-                               ts.Minutes,
-                               ts.Seconds,
-                               ts.Milliseconds / 10);
+                               stopWatch.ElapsedMilliseconds);
 
         _logger.LogInformation(_elapsedTimeMessage);
     }

@@ -27,7 +27,7 @@ public class CoursesController : BaseController
     }
 
     [HttpGet("{courseId}", Name = nameof(GetCourseAsync))]
-    [ProducesResponseType(typeof(Course), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(CourseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
@@ -65,7 +65,7 @@ public class CoursesController : BaseController
     }
 
     [HttpPost]
-    [ProducesResponseType(typeof(Course), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(CourseDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
@@ -110,7 +110,7 @@ public class CoursesController : BaseController
     }
 
     [HttpPut()]
-    [ProducesResponseType(typeof(Course), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(CourseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]

@@ -208,7 +208,7 @@ internal static class StartupHelperExtensions
 
     private static IServiceCollection RegisterDbContext(this IServiceCollection services)
     {
-        services.AddDbContext<StorageBroker>(ServiceLifetime.Scoped);
+        services.AddDbContext<StorageBroker>();
 
         return services;
     }

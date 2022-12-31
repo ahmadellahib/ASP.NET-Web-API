@@ -1,9 +1,11 @@
 ﻿using CourseLibrary.API.Models.Categories;
 using CourseLibrary.API.Models.Courses;
 using CourseLibrary.API.Models.Enums;
+using System.Diagnostics;
 
 namespace CourseLibrary.API.Models.Users;
 
+[DebuggerDisplay("{FirstName,nq} {LastName,nq}")]
 public class User : IConcurrencyAware
 {
     public Guid Id { get; set; }

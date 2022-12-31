@@ -1,8 +1,10 @@
 using CourseLibrary.API.Models.Authors;
 using CourseLibrary.API.Models.Users;
+using System.Diagnostics;
 
 namespace CourseLibrary.API.Models.Courses;
 
+[DebuggerDisplay("{Title,nq}")]
 public class Course : IConcurrencyAware, IAuditable
 {
     public Guid Id { get; set; }

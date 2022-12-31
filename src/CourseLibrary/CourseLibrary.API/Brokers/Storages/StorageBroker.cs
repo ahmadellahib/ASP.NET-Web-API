@@ -30,7 +30,11 @@ internal sealed partial class StorageBroker : DbContext, IStorageBroker
             throw new Exception("DefaultConnection is missing app configurations.");
         }
 
-        optionsBuilder.UseSqlServer(connectionString)
+        optionsBuilder.UseSqlServer(connectionString,
+            providerOptions =>
+            {
+                providerOptions.EnableRetryOnFailure();
+            })
             .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
 
         if (_env.IsDevelopment())

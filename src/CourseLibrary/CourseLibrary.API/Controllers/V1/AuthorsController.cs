@@ -27,7 +27,7 @@ public class AuthorsController : BaseController
     }
 
     [HttpGet("{authorId}", Name = nameof(GetAuthorAsync))]
-    [ProducesResponseType(typeof(Author), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(AuthorDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
@@ -65,7 +65,7 @@ public class AuthorsController : BaseController
     }
 
     [HttpPost]
-    [ProducesResponseType(typeof(Author), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(AuthorDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
@@ -110,7 +110,7 @@ public class AuthorsController : BaseController
     }
 
     [HttpPut()]
-    [ProducesResponseType(typeof(Author), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(AuthorDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
