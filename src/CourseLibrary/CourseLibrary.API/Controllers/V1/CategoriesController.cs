@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using CategoryLibrary.API.Services.V1.Categories;
+﻿using CategoryLibrary.API.Services.V1.Categories;
 using CourseLibrary.API.Contracts.Categories;
 using CourseLibrary.API.Filters;
 using CourseLibrary.API.Models.Categories;
@@ -15,12 +14,10 @@ namespace CategoryLibrary.API.Controllers.V1;
 [ServiceFilter(typeof(EndpointElapsedTimeFilter))]
 public class CategoriesController : BaseController
 {
-    private readonly IMapper _mapper;
     private readonly ICategoryOrchestrationService _categoryOrchestrationService;
 
-    public CategoriesController(IMapper mapper, ICategoryOrchestrationService categoryOrchestrationService)
+    public CategoriesController(ICategoryOrchestrationService categoryOrchestrationService)
     {
-        _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         _categoryOrchestrationService = categoryOrchestrationService ?? throw new ArgumentNullException(nameof(categoryOrchestrationService));
     }
 
@@ -36,7 +33,7 @@ public class CategoriesController : BaseController
         {
             Category category = await _categoryOrchestrationService.RetrieveCategoryByIdAsync(categoryId, cancellationToken);
 
-            return Ok(_mapper.Map<CategoryDto>(category));
+            return Ok((CategoryDto)category);
         }
         catch (CancellationException) { return NoContent(); }
         catch (ValidationException validationException)
@@ -73,10 +70,9 @@ public class CategoriesController : BaseController
     {
         try
         {
-            Category category = _mapper.Map<Category>(categoryForCreation);
-            Category addedCategory = await _categoryOrchestrationService.CreateCategoryAsync(category, cancellationToken);
+            Category addedCategory = await _categoryOrchestrationService.CreateCategoryAsync((Category)categoryForCreation, cancellationToken);
 
-            return CreatedAtRoute(nameof(GetCategoryAsync), new { categoryId = addedCategory.Id }, _mapper.Map<CategoryDto>(addedCategory));
+            return CreatedAtRoute(nameof(GetCategoryAsync), new { categoryId = addedCategory.Id }, (CategoryDto)addedCategory);
         }
         catch (CancellationException) { return NoContent(); }
         catch (ValidationException validationException)
@@ -118,10 +114,9 @@ public class CategoriesController : BaseController
     {
         try
         {
-            Category category = _mapper.Map<Category>(categoryForUpdate);
-            Category storageCategory = await _categoryOrchestrationService.ModifyCategoryAsync(category, cancellationToken);
+            Category storageCategory = await _categoryOrchestrationService.ModifyCategoryAsync((Category)categoryForUpdate, cancellationToken);
 
-            return Ok(_mapper.Map<CategoryDto>(storageCategory));
+            return Ok((CategoryDto)storageCategory);
         }
         catch (CancellationException) { return NoContent(); }
         catch (ValidationException validationException)
@@ -168,7 +163,14 @@ public class CategoriesController : BaseController
         {
             IEnumerable<Category> storageCategories = _categoryOrchestrationService.RetrieveAllCategories();
 
-            return Ok(_mapper.Map<IEnumerable<CategoryDto>>(storageCategories));
+            List<CategoryDto> categoriesDtos = new();
+
+            foreach (Category category in storageCategories)
+            {
+                categoriesDtos.Add((CategoryDto)category);
+            }
+
+            return Ok(categoriesDtos);
         }
         catch (DependencyException<CategoryFoundationService> dependencyException)
         {

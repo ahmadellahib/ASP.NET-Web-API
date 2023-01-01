@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using CourseLibrary.API.Contracts.Authors;
+﻿using CourseLibrary.API.Contracts.Authors;
 using CourseLibrary.API.Filters;
 using CourseLibrary.API.Models.Authors;
 using CourseLibrary.API.Models.Exceptions;
@@ -17,12 +16,10 @@ namespace CourseLibrary.API.Controllers.V1;
 [ServiceFilter(typeof(EndpointElapsedTimeFilter))]
 public class AuthorsController : BaseController
 {
-    private readonly IMapper _mapper;
     private readonly IAuthorOrchestrationService _authorOrchestrationService;
 
-    public AuthorsController(IMapper mapper, IAuthorOrchestrationService authorOrchestrationService)
+    public AuthorsController(IAuthorOrchestrationService authorOrchestrationService)
     {
-        _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         _authorOrchestrationService = authorOrchestrationService ?? throw new ArgumentNullException(nameof(authorOrchestrationService));
     }
 
@@ -38,7 +35,7 @@ public class AuthorsController : BaseController
         {
             Author author = await _authorOrchestrationService.RetrieveAuthorByIdAsync(authorId, cancellationToken);
 
-            return Ok(_mapper.Map<AuthorDto>(author));
+            return Ok((AuthorDto)author);
         }
         catch (CancellationException) { return NoContent(); }
         catch (ValidationException validationException)
@@ -65,7 +62,7 @@ public class AuthorsController : BaseController
     }
 
     [HttpPost]
-    [ProducesResponseType(typeof(AuthorDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(AuthorCreatedDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
@@ -75,10 +72,9 @@ public class AuthorsController : BaseController
     {
         try
         {
-            Author author = _mapper.Map<Author>(authorForCreation);
-            Author addedAuthor = await _authorOrchestrationService.CreateAuthorAsync(author, cancellationToken);
+            Author addedAuthor = await _authorOrchestrationService.CreateAuthorAsync((Author)authorForCreation, cancellationToken);
 
-            return CreatedAtRoute(nameof(GetAuthorAsync), new { authorId = addedAuthor.Id }, _mapper.Map<AuthorDto>(addedAuthor));
+            return CreatedAtRoute(nameof(GetAuthorAsync), new { authorId = addedAuthor.Id }, (AuthorCreatedDto)addedAuthor);
         }
         catch (CancellationException) { return NoContent(); }
         catch (ValidationException validationException)
@@ -110,7 +106,7 @@ public class AuthorsController : BaseController
     }
 
     [HttpPut()]
-    [ProducesResponseType(typeof(AuthorDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(AuthorUpdatedDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
@@ -120,10 +116,9 @@ public class AuthorsController : BaseController
     {
         try
         {
-            Author author = _mapper.Map<Author>(authorForUpdate);
-            Author storageAuthor = await _authorOrchestrationService.ModifyAuthorAsync(author, cancellationToken);
+            Author storageAuthor = await _authorOrchestrationService.ModifyAuthorAsync((Author)authorForUpdate, cancellationToken);
 
-            return Ok(_mapper.Map<AuthorDto>(storageAuthor));
+            return Ok((AuthorUpdatedDto)storageAuthor);
         }
         catch (CancellationException) { return NoContent(); }
         catch (ValidationException validationException)
@@ -235,7 +230,14 @@ public class AuthorsController : BaseController
 
             Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(PaginationMetaData));
 
-            return Ok(_mapper.Map<IEnumerable<AuthorDto>>(storagePagedAuthors));
+            List<AuthorDto> authorsDtos = new();
+
+            foreach (Author author in storagePagedAuthors)
+            {
+                authorsDtos.Add((AuthorDto)author);
+            }
+
+            return Ok(authorsDtos);
         }
         catch (ResourceParametersException resourceParametersException)
         {

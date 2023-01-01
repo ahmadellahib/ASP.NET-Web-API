@@ -28,7 +28,6 @@ internal static class StartupHelperExtensions
     {
         builder.Services.RegisterDependencies()
             .RegisterDbContext()
-            .RegisterAutoMapper()
             .RegisterApiVersioning()
             .AddEndpointsApiExplorer()
             .RegisterSwagger()
@@ -209,13 +208,6 @@ internal static class StartupHelperExtensions
     private static IServiceCollection RegisterDbContext(this IServiceCollection services)
     {
         services.AddDbContext<StorageBroker>();
-
-        return services;
-    }
-
-    private static IServiceCollection RegisterAutoMapper(this IServiceCollection services)
-    {
-        services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
         return services;
     }

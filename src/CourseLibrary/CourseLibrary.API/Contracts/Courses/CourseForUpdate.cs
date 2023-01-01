@@ -1,4 +1,6 @@
-﻿namespace CourseLibrary.API.Contracts.Courses;
+﻿using CourseLibrary.API.Models.Courses;
+
+namespace CourseLibrary.API.Contracts.Courses;
 
 public class CourseForUpdate
 {
@@ -8,4 +10,14 @@ public class CourseForUpdate
     public string? Description { get; set; }
     public Guid UpdatedById { get; set; }
     public string ConcurrencyStamp { get; set; } = string.Empty;
+
+    public static explicit operator Course(CourseForUpdate courseForUpdate) => new()
+    {
+        Id = courseForUpdate.Id,
+        AuthorId = courseForUpdate.AuthorId,
+        Title = courseForUpdate.Title,
+        Description = courseForUpdate.Description,
+        UpdatedById = courseForUpdate.UpdatedById,
+        ConcurrencyStamp = courseForUpdate.ConcurrencyStamp
+    };
 }

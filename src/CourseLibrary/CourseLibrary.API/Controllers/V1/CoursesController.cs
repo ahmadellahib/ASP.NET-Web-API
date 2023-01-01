@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using CourseLibrary.API.Contracts.Courses;
+﻿using CourseLibrary.API.Contracts.Courses;
 using CourseLibrary.API.Filters;
 using CourseLibrary.API.Models.Courses;
 using CourseLibrary.API.Models.Exceptions;
@@ -17,12 +16,10 @@ namespace CourseLibrary.API.Controllers.V1;
 [ServiceFilter(typeof(EndpointElapsedTimeFilter))]
 public class CoursesController : BaseController
 {
-    private readonly IMapper _mapper;
     private readonly ICourseOrchestrationService _courseOrchestrationService;
 
-    public CoursesController(IMapper mapper, ICourseOrchestrationService courseOrchestrationService)
+    public CoursesController(ICourseOrchestrationService courseOrchestrationService)
     {
-        _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         _courseOrchestrationService = courseOrchestrationService ?? throw new ArgumentNullException(nameof(courseOrchestrationService));
     }
 
@@ -38,7 +35,7 @@ public class CoursesController : BaseController
         {
             Course course = await _courseOrchestrationService.RetrieveCourseByIdAsync(courseId, cancellationToken);
 
-            return Ok(_mapper.Map<CourseDto>(course));
+            return Ok((CourseDto)course);
         }
         catch (CancellationException) { return NoContent(); }
         catch (ValidationException validationException)
@@ -65,7 +62,7 @@ public class CoursesController : BaseController
     }
 
     [HttpPost]
-    [ProducesResponseType(typeof(CourseDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(CourseCreatedDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
@@ -75,10 +72,9 @@ public class CoursesController : BaseController
     {
         try
         {
-            Course course = _mapper.Map<Course>(courseForCreation);
-            Course addedCourse = await _courseOrchestrationService.CreateCourseAsync(course, cancellationToken);
+            Course addedCourse = await _courseOrchestrationService.CreateCourseAsync((Course)courseForCreation, cancellationToken);
 
-            return CreatedAtRoute(nameof(GetCourseAsync), new { courseId = addedCourse.Id }, _mapper.Map<CourseDto>(addedCourse));
+            return CreatedAtRoute(nameof(GetCourseAsync), new { courseId = addedCourse.Id }, (CourseCreatedDto)addedCourse);
         }
         catch (CancellationException) { return NoContent(); }
         catch (ValidationException validationException)
@@ -110,7 +106,7 @@ public class CoursesController : BaseController
     }
 
     [HttpPut()]
-    [ProducesResponseType(typeof(CourseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(CourseUpdatedDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
@@ -120,10 +116,9 @@ public class CoursesController : BaseController
     {
         try
         {
-            Course course = _mapper.Map<Course>(courseForUpdate);
-            Course storageCourse = await _courseOrchestrationService.ModifyCourseAsync(course, cancellationToken);
+            Course storageCourse = await _courseOrchestrationService.ModifyCourseAsync((Course)courseForUpdate, cancellationToken);
 
-            return Ok(_mapper.Map<CourseDto>(storageCourse));
+            return Ok((CourseUpdatedDto)storageCourse);
         }
         catch (CancellationException) { return NoContent(); }
         catch (ValidationException validationException)
@@ -235,7 +230,14 @@ public class CoursesController : BaseController
 
             Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(PaginationMetaData));
 
-            return Ok(_mapper.Map<IEnumerable<CourseDto>>(storagePagedCourses));
+            List<CourseDto> coursesDtos = new();
+
+            foreach (Course course in storagePagedCourses)
+            {
+                coursesDtos.Add((CourseDto)course);
+            }
+
+            return Ok(coursesDtos);
         }
         catch (ResourceParametersException resourceParametersException)
         {

@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using CourseLibrary.API.Contracts.Users;
+﻿using CourseLibrary.API.Contracts.Users;
 using CourseLibrary.API.Filters;
 using CourseLibrary.API.Models.Exceptions;
 using CourseLibrary.API.Models.Users;
@@ -17,12 +16,10 @@ namespace CourseLibrary.API.Controllers.V1;
 [ServiceFilter(typeof(EndpointElapsedTimeFilter))]
 public class UsersController : BaseController
 {
-    private readonly IMapper _mapper;
     private readonly IUserOrchestrationService _userOrchestrationService;
 
-    public UsersController(IMapper mapper, IUserOrchestrationService userOrchestrationService)
+    public UsersController(IUserOrchestrationService userOrchestrationService)
     {
-        _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         _userOrchestrationService = userOrchestrationService ?? throw new ArgumentNullException(nameof(userOrchestrationService));
     }
 
@@ -38,7 +35,7 @@ public class UsersController : BaseController
         {
             User user = await _userOrchestrationService.RetrieveUserByIdAsync(userId, cancellationToken);
 
-            return Ok(_mapper.Map<UserDto>(user));
+            return Ok((UserDto)user);
         }
         catch (CancellationException) { return NoContent(); }
         catch (ValidationException validationException)
@@ -75,10 +72,9 @@ public class UsersController : BaseController
     {
         try
         {
-            User user = _mapper.Map<User>(userForCreation);
-            User addedUser = await _userOrchestrationService.CreateUserAsync(user, cancellationToken);
+            User addedUser = await _userOrchestrationService.CreateUserAsync((User)userForCreation, cancellationToken);
 
-            return CreatedAtRoute(nameof(GetUserAsync), new { userId = addedUser.Id }, _mapper.Map<UserDto>(addedUser));
+            return CreatedAtRoute(nameof(GetUserAsync), new { userId = addedUser.Id }, (UserDto)addedUser);
         }
         catch (CancellationException) { return NoContent(); }
         catch (ValidationException validationException)
@@ -120,10 +116,9 @@ public class UsersController : BaseController
     {
         try
         {
-            User user = _mapper.Map<User>(userForUpdate);
-            User storageUser = await _userOrchestrationService.ModifyUserAsync(user, cancellationToken);
+            User storageUser = await _userOrchestrationService.ModifyUserAsync((User)userForUpdate, cancellationToken);
 
-            return Ok(_mapper.Map<UserDto>(storageUser));
+            return Ok((UserDto)storageUser);
         }
         catch (CancellationException) { return NoContent(); }
         catch (ValidationException validationException)
@@ -185,7 +180,14 @@ public class UsersController : BaseController
 
             Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(PaginationMetaData));
 
-            return Ok(_mapper.Map<IEnumerable<UserDto>>(storagePagedUsers));
+            List<UserDto> usersDtos = new();
+
+            foreach (User user in storagePagedUsers)
+            {
+                usersDtos.Add((UserDto)user);
+            }
+
+            return Ok(usersDtos);
         }
         catch (ResourceParametersException resourceParametersException)
         {
