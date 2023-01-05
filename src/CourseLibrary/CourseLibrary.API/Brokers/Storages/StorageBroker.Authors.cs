@@ -39,6 +39,5 @@ internal sealed partial class StorageBroker
 
     public IQueryable<Author> SelectAllAuthors() =>
         Authors.Include(x => x.MainCategory)
-               .Include(x => x.User)
-               .AsQueryable();
+               .Include(x => x.User);
 }

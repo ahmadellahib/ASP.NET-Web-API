@@ -43,6 +43,5 @@ internal sealed partial class StorageBroker
                       .SingleOrDefaultAsync(x => x.Id == courseId, cancellationToken);
 
     public IQueryable<Course> SelectAllCourses() =>
-        Courses.Include(course => course.Author.User)
-               .AsQueryable();
+        Courses.Include(course => course.Author.User);
 }
