@@ -1,5 +1,6 @@
 ﻿using Bogus;
 using CategoryLibrary.API.Services.V1.Categories;
+using CourseLibrary.API.Brokers.Caches;
 using CourseLibrary.API.Brokers.Loggings;
 using CourseLibrary.API.Brokers.Storages;
 using CourseLibrary.API.Extensions;
@@ -27,6 +28,7 @@ internal static class StartupHelperExtensions
     public static WebApplication ConfigureServices(this WebApplicationBuilder builder)
     {
         builder.Services.RegisterDependencies()
+            .AddMemoryCache()
             .RegisterDbContext()
             .RegisterApiVersioning()
             .AddEndpointsApiExplorer()
@@ -181,6 +183,7 @@ internal static class StartupHelperExtensions
 
     private static IServiceCollection RegisterDependencies(this IServiceCollection services)
     {
+        services.AddSingleton<ICacheBroker, CacheBroker>();
         services.AddSingleton<IServicesLogicValidator, ServicesLogicValidator>();
 
         services.AddScoped<IStorageBroker, StorageBroker>();

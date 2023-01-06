@@ -59,9 +59,9 @@ internal sealed class CategoryProcessingService : ICategoryProcessingService
         }
     }
 
-    public async ValueTask<Category> RetrieveCategoryByIdAsync(Guid categoryId, CancellationToken cancellationToken) =>
-        await _categoryFoundationService.RetrieveCategoryByIdAsync(categoryId, cancellationToken);
+    public Category RetrieveCategoryById(Guid categoryId) =>
+        _categoryFoundationService.RetrieveCategoryById(categoryId);
 
-    public IQueryable<Category> RetrieveAllCategories() =>
+    public IEnumerable<Category> RetrieveAllCategories() =>
         _categoryFoundationService.RetrieveAllCategories();
 }

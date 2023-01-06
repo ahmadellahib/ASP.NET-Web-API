@@ -33,11 +33,9 @@ internal sealed partial class StorageBroker
     }
 
     public async ValueTask<Author?> SelectAuthorByIdAsync(Guid authorId, CancellationToken cancellationToken) =>
-         await Authors.Include(x => x.MainCategory)
-                      .Include(x => x.User)
+         await Authors.Include(x => x.User)
                       .SingleOrDefaultAsync(x => x.Id == authorId, cancellationToken);
 
     public IQueryable<Author> SelectAllAuthors() =>
-        Authors.Include(x => x.MainCategory)
-               .Include(x => x.User);
+        Authors.Include(x => x.User);
 }

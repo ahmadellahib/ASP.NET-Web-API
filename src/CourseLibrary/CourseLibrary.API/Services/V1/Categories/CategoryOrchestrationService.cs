@@ -54,7 +54,7 @@ internal sealed class CategoryOrchestrationService : ICategoryOrchestrationServi
                 throw new CategoryWithSameNameAlreadyExistsException();
             }
 
-            Category storageCategory = await _categoryProcessingService.RetrieveCategoryByIdAsync(category.Id, cancellationToken);
+            Category storageCategory = _categoryProcessingService.RetrieveCategoryById(category.Id);
             _servicesLogicValidator.ValidateEntityConcurrency<Category>(category, storageCategory);
 
             category.CreatedById = storageCategory.CreatedById;
@@ -81,8 +81,8 @@ internal sealed class CategoryOrchestrationService : ICategoryOrchestrationServi
         }
     }
 
-    public async ValueTask<Category> RetrieveCategoryByIdAsync(Guid categoryId, CancellationToken cancellationToken) =>
-        await _categoryProcessingService.RetrieveCategoryByIdAsync(categoryId, cancellationToken);
+    public Category RetrieveCategoryById(Guid categoryId) =>
+        _categoryProcessingService.RetrieveCategoryById(categoryId);
 
     public IEnumerable<Category> RetrieveAllCategories() =>
         _categoryProcessingService.RetrieveAllCategories();

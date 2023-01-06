@@ -8,7 +8,7 @@ public interface ICategoryProcessingService
 
     Task<Category> ModifyCategoryAsync(Category category, CancellationToken cancellationToken);
 
-    ValueTask<Category> RetrieveCategoryByIdAsync(Guid categoryId, CancellationToken cancellationToken);
+    Category RetrieveCategoryById(Guid categoryId);
 
-    IQueryable<Category> RetrieveAllCategories();
+    IEnumerable<Category> RetrieveAllCategories();
 }

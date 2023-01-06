@@ -1,4 +1,5 @@
 ﻿using CourseLibrary.API;
+using CourseLibrary.API.Brokers.Caches;
 using CourseLibrary.API.Brokers.Loggings;
 using CourseLibrary.API.Brokers.Storages;
 using CourseLibrary.API.Models.Categories;
@@ -12,16 +13,19 @@ namespace CategoryLibrary.API.Services.V1.Categories;
 
 internal sealed class CategoryFoundationService : ICategoryFoundationService
 {
+    private readonly ICacheBroker _cacheBroker;
     private readonly IStorageBroker _storageBroker;
     private readonly IServicesLogicValidator _servicesLogicValidator;
     private readonly ILoggingBroker<CategoryFoundationService> _loggingBroker;
     private readonly IServicesExceptionsLogger<CategoryFoundationService> _servicesExceptionsLogger;
 
-    public CategoryFoundationService(IStorageBroker storageBroker,
+    public CategoryFoundationService(ICacheBroker cacheBroker,
+        IStorageBroker storageBroker,
         IServicesLogicValidator servicesLogicValidator,
         ILoggingBroker<CategoryFoundationService> loggingBroker,
         IServicesExceptionsLogger<CategoryFoundationService> servicesExceptionsLogger)
     {
+        _cacheBroker = cacheBroker ?? throw new ArgumentNullException(nameof(cacheBroker));
         _storageBroker = storageBroker ?? throw new ArgumentNullException(nameof(storageBroker));
         _servicesLogicValidator = servicesLogicValidator ?? throw new ArgumentNullException(nameof(servicesLogicValidator));
         _loggingBroker = loggingBroker ?? throw new ArgumentNullException(nameof(loggingBroker));
@@ -33,6 +37,8 @@ internal sealed class CategoryFoundationService : ICategoryFoundationService
         try
         {
             _servicesLogicValidator.ValidateEntity(category, new CategoryValidator(true));
+
+            _cacheBroker.ClearCachedCategories();
 
             return await _storageBroker.InsertCategoryAsync(category, cancellationToken);
         }
@@ -70,6 +76,8 @@ internal sealed class CategoryFoundationService : ICategoryFoundationService
         {
             _servicesLogicValidator.ValidateEntity(category, new CategoryValidator(false));
 
+            _cacheBroker.ClearCachedCategories();
+
             return await _storageBroker.UpdateCategoryAsync(category, cancellationToken);
         }
         catch (InvalidEntityException<Category> invalidEntityException)
@@ -100,13 +108,23 @@ internal sealed class CategoryFoundationService : ICategoryFoundationService
         }
     }
 
-    public async ValueTask<Category> RetrieveCategoryByIdAsync(Guid categoryId, CancellationToken cancellationToken)
+    public Category RetrieveCategoryById(Guid categoryId)
     {
         try
         {
             _servicesLogicValidator.ValidateParameter(categoryId, nameof(categoryId));
 
-            Category? storageCategory = await _storageBroker.SelectCategoryByIdAsync(categoryId, cancellationToken);
+            Category? storageCategory;
+            List<Category> storageCategories = _cacheBroker.GetCachedCategories();
+
+            if (storageCategories is null)
+            {
+                storageCategories = _storageBroker.SelectAllCategories().ToList();
+                _cacheBroker.SetCachedCategories(storageCategories);
+            }
+
+            storageCategory = storageCategories.FirstOrDefault(category => category.Id == categoryId);
+
             _servicesLogicValidator.ValidateStorageEntity<Category>(storageCategory, categoryId);
 
             return storageCategory!;
@@ -129,11 +147,17 @@ internal sealed class CategoryFoundationService : ICategoryFoundationService
         }
     }
 
-    public IQueryable<Category> RetrieveAllCategories()
+    public IEnumerable<Category> RetrieveAllCategories()
     {
         try
         {
-            IQueryable<Category> storageCategories = _storageBroker.SelectAllCategories();
+            List<Category> storageCategories = _cacheBroker.GetCachedCategories();
+
+            if (storageCategories is null)
+            {
+                storageCategories = _storageBroker.SelectAllCategories().ToList();
+                _cacheBroker.SetCachedCategories(storageCategories);
+            }
 
             if (!storageCategories.Any())
             {

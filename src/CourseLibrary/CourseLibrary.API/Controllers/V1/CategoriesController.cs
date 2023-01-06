@@ -21,17 +21,17 @@ public class CategoriesController : BaseController
         _categoryOrchestrationService = categoryOrchestrationService ?? throw new ArgumentNullException(nameof(categoryOrchestrationService));
     }
 
-    [HttpGet("{categoryId}", Name = nameof(GetCategoryAsync))]
+    [HttpGet("{categoryId}", Name = nameof(GetCategory))]
     [ProducesResponseType(typeof(CategoryDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
-    public async ValueTask<IActionResult> GetCategoryAsync([FromRoute] Guid categoryId, [FromServices] IOptions<ApiBehaviorOptions> apiBehaviorOptions, CancellationToken cancellationToken)
+    public IActionResult GetCategory([FromRoute] Guid categoryId, [FromServices] IOptions<ApiBehaviorOptions> apiBehaviorOptions)
     {
         try
         {
-            Category category = await _categoryOrchestrationService.RetrieveCategoryByIdAsync(categoryId, cancellationToken);
+            Category category = _categoryOrchestrationService.RetrieveCategoryById(categoryId);
 
             return Ok((CategoryDto)category);
         }
@@ -72,7 +72,7 @@ public class CategoriesController : BaseController
         {
             Category addedCategory = await _categoryOrchestrationService.CreateCategoryAsync((Category)categoryForCreation, cancellationToken);
 
-            return CreatedAtRoute(nameof(GetCategoryAsync), new { categoryId = addedCategory.Id }, (CategoryDto)addedCategory);
+            return CreatedAtRoute(nameof(GetCategory), new { categoryId = addedCategory.Id }, (CategoryDto)addedCategory);
         }
         catch (CancellationException) { return NoContent(); }
         catch (ValidationException validationException)
