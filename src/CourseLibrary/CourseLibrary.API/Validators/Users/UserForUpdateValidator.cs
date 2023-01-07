@@ -3,7 +3,7 @@ using FluentValidation;
 
 namespace CourseLibrary.API.Validators.Users;
 
-internal sealed class UserForUpdateValidator : AbstractValidator<UserForUpdate>
+public sealed class UserForUpdateValidator : AbstractValidator<UserForUpdate>
 {
     public UserForUpdateValidator()
     {

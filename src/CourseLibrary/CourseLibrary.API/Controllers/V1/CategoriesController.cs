@@ -35,27 +35,9 @@ public class CategoriesController : BaseController
 
             return Ok((CategoryDto)category);
         }
-        catch (CancellationException) { return NoContent(); }
-        catch (ValidationException validationException)
-           when (validationException.InnerException is NotFoundEntityException<Category>)
+        catch (Exception exception)
         {
-            string innerMessage = GetInnerMessage(validationException);
-
-            return NotFound(innerMessage);
-        }
-        catch (ValidationException validationException)
-        {
-            SetModelState(ModelState, validationException);
-
-            return apiBehaviorOptions.Value.InvalidModelStateResponseFactory(ControllerContext);
-        }
-        catch (DependencyException<CategoryFoundationService> dependencyException)
-        {
-            return Problem(dependencyException.Message);
-        }
-        catch (ServiceException<CategoryFoundationService> serviceException)
-        {
-            return Problem(serviceException.Message);
+            return HandleException(exception, apiBehaviorOptions, ControllerContext);
         }
     }
 
@@ -74,32 +56,9 @@ public class CategoriesController : BaseController
 
             return CreatedAtRoute(nameof(GetCategory), new { categoryId = addedCategory.Id }, (CategoryDto)addedCategory);
         }
-        catch (CancellationException) { return NoContent(); }
-        catch (ValidationException validationException)
-           when (validationException.InnerException is NotFoundEntityException<Category>)
+        catch (Exception exception)
         {
-            string innerMessage = GetInnerMessage(validationException);
-
-            return NotFound(innerMessage);
-        }
-        catch (ValidationException validationException)
-        {
-            SetModelState(ModelState, validationException);
-
-            return apiBehaviorOptions.Value.InvalidModelStateResponseFactory(ControllerContext);
-        }
-        catch (DependencyException<CategoryFoundationService> dependencyException)
-            when (dependencyException.InnerException is DbConflictException)
-        {
-            return Conflict(dependencyException.Message);
-        }
-        catch (DependencyException<CategoryFoundationService> dependencyException)
-        {
-            return Problem(dependencyException.Message);
-        }
-        catch (ServiceException<CategoryFoundationService> serviceException)
-        {
-            return Problem(serviceException.Message);
+            return HandleException(exception, apiBehaviorOptions, ControllerContext);
         }
     }
 
@@ -118,39 +77,9 @@ public class CategoriesController : BaseController
 
             return Ok((CategoryDto)storageCategory);
         }
-        catch (CancellationException) { return NoContent(); }
-        catch (ValidationException validationException)
-           when (validationException.InnerException is NotFoundEntityException<Category>)
+        catch (Exception exception)
         {
-            string innerMessage = GetInnerMessage(validationException);
-
-            return NotFound(innerMessage);
-        }
-        catch (ValidationException validationException)
-        {
-            SetModelState(ModelState, validationException);
-
-            return apiBehaviorOptions.Value.InvalidModelStateResponseFactory(ControllerContext);
-        }
-        catch (DependencyException<CategoryFoundationService> dependencyException)
-            when (dependencyException.InnerException is DbConflictException)
-        {
-            return Conflict(dependencyException.Message);
-        }
-        catch (DependencyException<CategoryFoundationService> dependencyException)
-            when (dependencyException.InnerException is LockedEntityException<Category>)
-        {
-            string innerMessage = GetInnerMessage(dependencyException);
-
-            return Problem(innerMessage);
-        }
-        catch (DependencyException<CategoryFoundationService> dependencyException)
-        {
-            return Problem(dependencyException.Message);
-        }
-        catch (ServiceException<CategoryFoundationService> serviceException)
-        {
-            return Problem(serviceException.Message);
+            return HandleException(exception, apiBehaviorOptions, ControllerContext);
         }
     }
 
@@ -172,13 +101,35 @@ public class CategoriesController : BaseController
 
             return Ok(categoriesDtos);
         }
-        catch (DependencyException<CategoryFoundationService> dependencyException)
+        catch (Exception exception)
         {
-            return Problem(dependencyException.Message);
+            return (ActionResult)HandleException(exception);
         }
-        catch (ServiceException<CategoryFoundationService> serviceException)
+    }
+
+    private IActionResult HandleException(Exception exception, IOptions<ApiBehaviorOptions>? apiBehaviorOptions = null, ActionContext? actionContext = null)
+    {
+        switch (exception)
         {
-            return Problem(serviceException.Message);
+            case CancellationException:
+                return NoContent();
+            case ValidationException when exception.InnerException is NotFoundEntityException<Category>:
+                return NotFound(GetInnerMessage(exception));
+            case ValidationException:
+                if (apiBehaviorOptions is null || actionContext is null)
+                {
+                    throw new ArgumentNullException(nameof(apiBehaviorOptions));
+                }
+
+                SetModelState(ModelState, (ValidationException)exception);
+
+                return apiBehaviorOptions!.Value.InvalidModelStateResponseFactory(actionContext!);
+            case IDependencyException when (exception.InnerException is DbConflictException):
+                return Conflict(exception.Message);
+            case IDependencyException when (exception.InnerException is LockedEntityException<Category>):
+                return Problem(GetInnerMessage(exception));
+            default:
+                return Problem(exception.Message);
         }
     }
 }

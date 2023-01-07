@@ -28,14 +28,9 @@ internal sealed class CategoryProcessingService : ICategoryProcessingService
 
             return await _categoryFoundationService.CreateCategoryAsync(category, cancellationToken);
         }
-        catch (CancellationException) { throw; }
-        catch (ResourceParametersException) { throw; }
-        catch (ValidationException) { throw; }
-        catch (DependencyException<CategoryFoundationService>) { throw; }
-        catch (ServiceException<CategoryFoundationService>) { throw; }
         catch (Exception exception)
         {
-            throw _servicesExceptionsLogger.CreateAndLogServiceException(exception);
+            throw HandleException(exception);
         }
     }
 
@@ -48,14 +43,9 @@ internal sealed class CategoryProcessingService : ICategoryProcessingService
 
             return await _categoryFoundationService.ModifyCategoryAsync(category, cancellationToken);
         }
-        catch (CancellationException) { throw; }
-        catch (ResourceParametersException) { throw; }
-        catch (ValidationException) { throw; }
-        catch (DependencyException<CategoryFoundationService>) { throw; }
-        catch (ServiceException<CategoryFoundationService>) { throw; }
         catch (Exception exception)
         {
-            throw _servicesExceptionsLogger.CreateAndLogServiceException(exception);
+            throw HandleException(exception);
         }
     }
 
@@ -64,4 +54,13 @@ internal sealed class CategoryProcessingService : ICategoryProcessingService
 
     public IEnumerable<Category> RetrieveAllCategories() =>
         _categoryFoundationService.RetrieveAllCategories();
+
+    private Exception HandleException(Exception exception)
+    {
+        throw exception switch
+        {
+            CancellationException or ValidationException or IDependencyException or IServiceException => exception,
+            _ => _servicesExceptionsLogger.CreateAndLogServiceException(exception),
+        };
+    }
 }

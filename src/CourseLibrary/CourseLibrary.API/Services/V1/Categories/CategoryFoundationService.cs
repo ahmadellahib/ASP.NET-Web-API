@@ -42,31 +42,9 @@ internal sealed class CategoryFoundationService : ICategoryFoundationService
 
             return await _storageBroker.InsertCategoryAsync(category, cancellationToken);
         }
-        catch (InvalidEntityException<Category> invalidEntityException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogServiceException(invalidEntityException);
-        }
-        catch (SqlException sqlException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogCriticalDependencyException(sqlException);
-        }
-        catch (DbUpdateConcurrencyException dbUpdateConcurrencyException)
-        {
-            LockedEntityException<Category> lockedEntityException = new(dbUpdateConcurrencyException);
-
-            throw _servicesExceptionsLogger.CreateAndLogDependencyException(lockedEntityException);
-        }
-        catch (DbUpdateException dbUpdateException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogDependencyException(dbUpdateException);
-        }
-        catch (Exception exception) when (exception is OperationCanceledException || exception is TaskCanceledException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogCancellationException(exception);
-        }
         catch (Exception exception)
         {
-            throw _servicesExceptionsLogger.CreateAndLogServiceException(exception);
+            throw HandleException(exception);
         }
     }
 
@@ -80,31 +58,9 @@ internal sealed class CategoryFoundationService : ICategoryFoundationService
 
             return await _storageBroker.UpdateCategoryAsync(category, cancellationToken);
         }
-        catch (InvalidEntityException<Category> invalidEntityException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogServiceException(invalidEntityException);
-        }
-        catch (SqlException sqlException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogCriticalDependencyException(sqlException);
-        }
-        catch (DbUpdateConcurrencyException dbUpdateConcurrencyException)
-        {
-            LockedEntityException<Category> lockedEntityException = new(dbUpdateConcurrencyException);
-
-            throw _servicesExceptionsLogger.CreateAndLogDependencyException(lockedEntityException);
-        }
-        catch (DbUpdateException dbUpdateException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogDependencyException(dbUpdateException);
-        }
-        catch (Exception exception) when (exception is OperationCanceledException || exception is TaskCanceledException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogCancellationException(exception);
-        }
         catch (Exception exception)
         {
-            throw _servicesExceptionsLogger.CreateAndLogServiceException(exception);
+            throw HandleException(exception);
         }
     }
 
@@ -129,21 +85,9 @@ internal sealed class CategoryFoundationService : ICategoryFoundationService
 
             return storageCategory!;
         }
-        catch (InvalidParameterException invalidIdException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogValidationException(invalidIdException);
-        }
-        catch (NotFoundEntityException<Category> notFoundEntityException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogValidationException(notFoundEntityException);
-        }
-        catch (Exception exception) when (exception is OperationCanceledException || exception is TaskCanceledException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogCancellationException(exception);
-        }
         catch (Exception exception)
         {
-            throw _servicesExceptionsLogger.CreateAndLogServiceException(exception);
+            throw HandleException(exception);
         }
     }
 
@@ -166,13 +110,34 @@ internal sealed class CategoryFoundationService : ICategoryFoundationService
 
             return storageCategories;
         }
-        catch (SqlException sqlException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogCriticalDependencyException(sqlException);
-        }
         catch (Exception exception)
         {
-            throw _servicesExceptionsLogger.CreateAndLogServiceException(exception);
+            throw HandleException(exception);
+        }
+    }
+
+    private Exception HandleException(Exception exception)
+    {
+        switch (exception)
+        {
+            case InvalidParameterException:
+            case NotFoundEntityException<Category>:
+                throw _servicesExceptionsLogger.CreateAndLogValidationException(exception);
+            case InvalidEntityException<Category>:
+                throw _servicesExceptionsLogger.CreateAndLogServiceException(exception);
+            case SqlException:
+                throw _servicesExceptionsLogger.CreateAndLogCriticalDependencyException(exception);
+            case DbUpdateConcurrencyException:
+                LockedEntityException<Category> lockedEntityException = new(exception);
+
+                throw _servicesExceptionsLogger.CreateAndLogDependencyException(lockedEntityException);
+            case DbUpdateException:
+                throw _servicesExceptionsLogger.CreateAndLogDependencyException(exception);
+            case TaskCanceledException:
+            case OperationCanceledException:
+                throw _servicesExceptionsLogger.CreateAndLogCancellationException(exception);
+            default:
+                throw _servicesExceptionsLogger.CreateAndLogServiceException(exception);
         }
     }
 }

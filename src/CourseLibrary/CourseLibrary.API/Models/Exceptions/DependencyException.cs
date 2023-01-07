@@ -1,6 +1,6 @@
 ﻿namespace CourseLibrary.API.Models.Exceptions;
 
-public class DependencyException<T> : Exception where T : class
+public class DependencyException<T> : Exception, IDependencyException where T : class
 {
     public DependencyException(Exception innerException)
         : base($"{typeof(T).Name} dependency error occurred, contact support.", innerException) { }

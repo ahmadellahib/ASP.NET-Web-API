@@ -30,18 +30,9 @@ internal sealed class CategoryOrchestrationService : ICategoryOrchestrationServi
 
             return await _categoryProcessingService.CreateCategoryAsync(category, cancellationToken);
         }
-        catch (CancellationException) { throw; }
-        catch (ResourceParametersException) { throw; }
-        catch (ValidationException) { throw; }
-        catch (DependencyException<CategoryFoundationService>) { throw; }
-        catch (ServiceException<CategoryFoundationService>) { throw; }
-        catch (CategoryWithSameNameAlreadyExistsException categoryWithSameNameAlreadyExistsException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogValidationException(categoryWithSameNameAlreadyExistsException);
-        }
         catch (Exception exception)
         {
-            throw _servicesExceptionsLogger.CreateAndLogServiceException(exception);
+            throw HandleException(exception);
         }
     }
 
@@ -62,22 +53,9 @@ internal sealed class CategoryOrchestrationService : ICategoryOrchestrationServi
 
             return await _categoryProcessingService.ModifyCategoryAsync(category, cancellationToken);
         }
-        catch (CancellationException) { throw; }
-        catch (ResourceParametersException) { throw; }
-        catch (ValidationException) { throw; }
-        catch (DependencyException<CategoryFoundationService>) { throw; }
-        catch (ServiceException<CategoryFoundationService>) { throw; }
-        catch (EntityConcurrencyException<Category> entityConcurrencyException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogValidationException(entityConcurrencyException);
-        }
-        catch (CategoryWithSameNameAlreadyExistsException categoryWithSameNameAlreadyExistsException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogValidationException(categoryWithSameNameAlreadyExistsException);
-        }
         catch (Exception exception)
         {
-            throw _servicesExceptionsLogger.CreateAndLogServiceException(exception);
+            throw HandleException(exception);
         }
     }
 
@@ -86,4 +64,14 @@ internal sealed class CategoryOrchestrationService : ICategoryOrchestrationServi
 
     public IEnumerable<Category> RetrieveAllCategories() =>
         _categoryProcessingService.RetrieveAllCategories();
+
+    private Exception HandleException(Exception exception)
+    {
+        throw exception switch
+        {
+            CancellationException or ValidationException or IDependencyException or IServiceException => exception,
+            CategoryWithSameNameAlreadyExistsException or EntityConcurrencyException<Category> => _servicesExceptionsLogger.CreateAndLogValidationException(exception),
+            _ => _servicesExceptionsLogger.CreateAndLogServiceException(exception),
+        };
+    }
 }
