@@ -2,7 +2,6 @@
 using CourseLibrary.API.Brokers.Storages;
 using CourseLibrary.API.Models.Exceptions;
 using CourseLibrary.API.Models.Users;
-using CourseLibrary.API.Services.V1.PropertyMappings;
 using CourseLibrary.API.Validators.Users;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
@@ -13,18 +12,15 @@ internal sealed class UserFoundationService : IUserFoundationService
 {
     private readonly IStorageBroker _storageBroker;
     private readonly IServicesLogicValidator _servicesLogicValidator;
-    private readonly IPropertyMappingService _propertyMappingService;
     private readonly ILoggingBroker<UserFoundationService> _loggingBroker;
     private readonly IServicesExceptionsLogger<UserFoundationService> _servicesExceptionsLogger;
 
     public UserFoundationService(IStorageBroker storageBroker,
-        IPropertyMappingService propertyMappingService,
         IServicesLogicValidator servicesLogicValidator,
         ILoggingBroker<UserFoundationService> loggingBroker,
         IServicesExceptionsLogger<UserFoundationService> servicesExceptionsLogger)
     {
         _storageBroker = storageBroker ?? throw new ArgumentNullException(nameof(storageBroker));
-        _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
         _servicesLogicValidator = servicesLogicValidator ?? throw new ArgumentNullException(nameof(servicesLogicValidator));
         _loggingBroker = loggingBroker ?? throw new ArgumentNullException(nameof(loggingBroker));
         _servicesExceptionsLogger = servicesExceptionsLogger ?? throw new ArgumentNullException(nameof(servicesExceptionsLogger));
@@ -38,31 +34,9 @@ internal sealed class UserFoundationService : IUserFoundationService
 
             return await _storageBroker.InsertUserAsync(user, cancellationToken);
         }
-        catch (InvalidEntityException<User> invalidEntityException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogServiceException(invalidEntityException);
-        }
-        catch (SqlException sqlException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogCriticalDependencyException(sqlException);
-        }
-        catch (DbUpdateConcurrencyException dbUpdateConcurrencyException)
-        {
-            LockedEntityException<User> lockedEntityException = new(dbUpdateConcurrencyException);
-
-            throw _servicesExceptionsLogger.CreateAndLogDependencyException(lockedEntityException);
-        }
-        catch (DbUpdateException dbUpdateException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogDependencyException(dbUpdateException);
-        }
-        catch (Exception exception) when (exception is OperationCanceledException || exception is TaskCanceledException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogCancellationException(exception);
-        }
         catch (Exception exception)
         {
-            throw _servicesExceptionsLogger.CreateAndLogServiceException(exception);
+            throw HandleException(exception);
         }
     }
 
@@ -74,31 +48,9 @@ internal sealed class UserFoundationService : IUserFoundationService
 
             return await _storageBroker.UpdateUserAsync(user, cancellationToken);
         }
-        catch (InvalidEntityException<User> invalidEntityException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogServiceException(invalidEntityException);
-        }
-        catch (SqlException sqlException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogCriticalDependencyException(sqlException);
-        }
-        catch (DbUpdateConcurrencyException dbUpdateConcurrencyException)
-        {
-            LockedEntityException<User> lockedEntityException = new(dbUpdateConcurrencyException);
-
-            throw _servicesExceptionsLogger.CreateAndLogDependencyException(lockedEntityException);
-        }
-        catch (DbUpdateException dbUpdateException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogDependencyException(dbUpdateException);
-        }
-        catch (Exception exception) when (exception is OperationCanceledException || exception is TaskCanceledException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogCancellationException(exception);
-        }
         catch (Exception exception)
         {
-            throw _servicesExceptionsLogger.CreateAndLogServiceException(exception);
+            throw HandleException(exception);
         }
     }
 
@@ -113,21 +65,9 @@ internal sealed class UserFoundationService : IUserFoundationService
 
             return storageUser!;
         }
-        catch (InvalidParameterException invalidIdException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogValidationException(invalidIdException);
-        }
-        catch (NotFoundEntityException<User> notFoundEntityException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogValidationException(notFoundEntityException);
-        }
-        catch (Exception exception) when (exception is OperationCanceledException || exception is TaskCanceledException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogCancellationException(exception);
-        }
         catch (Exception exception)
         {
-            throw _servicesExceptionsLogger.CreateAndLogServiceException(exception);
+            throw HandleException(exception);
         }
     }
 
@@ -144,13 +84,34 @@ internal sealed class UserFoundationService : IUserFoundationService
 
             return storageUsers;
         }
-        catch (SqlException sqlException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogCriticalDependencyException(sqlException);
-        }
         catch (Exception exception)
         {
-            throw _servicesExceptionsLogger.CreateAndLogServiceException(exception);
+            throw HandleException(exception);
+        }
+    }
+
+    private Exception HandleException(Exception exception)
+    {
+        switch (exception)
+        {
+            case InvalidParameterException:
+            case NotFoundEntityException<User>:
+                throw _servicesExceptionsLogger.CreateAndLogValidationException(exception);
+            case InvalidEntityException<User>:
+                throw _servicesExceptionsLogger.CreateAndLogServiceException(exception);
+            case SqlException:
+                throw _servicesExceptionsLogger.CreateAndLogCriticalDependencyException(exception);
+            case DbUpdateConcurrencyException:
+                LockedEntityException<User> lockedEntityException = new(exception);
+
+                throw _servicesExceptionsLogger.CreateAndLogDependencyException(lockedEntityException);
+            case DbUpdateException:
+                throw _servicesExceptionsLogger.CreateAndLogDependencyException(exception);
+            case TaskCanceledException:
+            case OperationCanceledException:
+                throw _servicesExceptionsLogger.CreateAndLogCancellationException(exception);
+            default:
+                throw _servicesExceptionsLogger.CreateAndLogServiceException(exception);
         }
     }
 }

@@ -15,14 +15,14 @@ public class NotFoundEntityException<T> : Exception
     {
         string idsString = ConvertParamsToString(ids);
 
-        return $"Couldn't find {typeof(T).Name} with id: {idsString}";
+        return $"The requested resource {typeof(T).Name} with id: {idsString} could not be found.";
     }
 
     private static string GenerateBaseMessage(params int[] ids)
     {
         string idsString = ConvertParamsToString(ids);
 
-        return $"Couldn't find {typeof(T).Name} with id: {idsString}";
+        return $"The requested resource {typeof(T).Name} with id: {idsString} could not be found.";
     }
 
     private static string ConvertParamsToString(params Guid[] ids)

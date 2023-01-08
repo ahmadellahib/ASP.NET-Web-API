@@ -1,7 +1,6 @@
 ﻿using CourseLibrary.API.Models.Exceptions;
 using CourseLibrary.API.Models.Users;
 using CourseLibrary.API.Pagination;
-using CourseLibrary.API.Services.V1.Authors;
 
 namespace CourseLibrary.API.Services.V1.Users;
 
@@ -9,17 +8,14 @@ internal sealed class UserOrchestrationService : IUserOrchestrationService
 {
     private readonly IUserProcessingService _userProcessingService;
     private readonly IServicesLogicValidator _servicesLogicValidator;
-    private readonly IAuthorOrchestrationService _authorOrchestrationService;
     private readonly IServicesExceptionsLogger<UserOrchestrationService> _servicesExceptionsLogger;
 
     public UserOrchestrationService(IUserProcessingService userProcessingService,
         IServicesLogicValidator servicesLogicValidator,
-        IAuthorOrchestrationService authorOrchestrationService,
         IServicesExceptionsLogger<UserOrchestrationService> servicesExceptionsLogger)
     {
         _userProcessingService = userProcessingService ?? throw new ArgumentNullException(nameof(userProcessingService));
         _servicesLogicValidator = servicesLogicValidator ?? throw new ArgumentNullException(nameof(servicesLogicValidator));
-        _authorOrchestrationService = authorOrchestrationService ?? throw new ArgumentNullException(nameof(authorOrchestrationService));
         _servicesExceptionsLogger = servicesExceptionsLogger ?? throw new ArgumentNullException(nameof(servicesExceptionsLogger));
     }
 
@@ -35,18 +31,9 @@ internal sealed class UserOrchestrationService : IUserOrchestrationService
 
             return await _userProcessingService.ModifyUserAsync(user, cancellationToken);
         }
-        catch (CancellationException) { throw; }
-        catch (ResourceParametersException) { throw; }
-        catch (ValidationException) { throw; }
-        catch (DependencyException<UserFoundationService>) { throw; }
-        catch (ServiceException<UserFoundationService>) { throw; }
-        catch (EntityConcurrencyException<User> entityConcurrencyException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogValidationException(entityConcurrencyException);
-        }
         catch (Exception exception)
         {
-            throw _servicesExceptionsLogger.CreateAndLogServiceException(exception);
+            throw HandleException(exception);
         }
     }
 
@@ -66,7 +53,17 @@ internal sealed class UserOrchestrationService : IUserOrchestrationService
         }
         catch (Exception exception)
         {
-            throw _servicesExceptionsLogger.CreateAndLogServiceException(exception);
+            throw HandleException(exception);
         }
+    }
+
+    private Exception HandleException(Exception exception)
+    {
+        throw exception switch
+        {
+            ResourceParametersException or CancellationException or ValidationException or IDependencyException or IServiceException => exception,
+            EntityConcurrencyException<User> => _servicesExceptionsLogger.CreateAndLogValidationException(exception),
+            _ => _servicesExceptionsLogger.CreateAndLogServiceException(exception),
+        };
     }
 }

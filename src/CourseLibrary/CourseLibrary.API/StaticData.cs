@@ -2,6 +2,11 @@
 
 internal static class StaticData
 {
+    public class ControllerMessages
+    {
+        public const string InternalServerError = "An unexpected fault happened. Try again later.";
+    }
+
     public class ValidationMessages
     {
         public const string InvalidValue = "Is not a valid value.";

@@ -1,5 +1,7 @@
-﻿using CourseLibrary.API.Contracts.Users;
+﻿using CourseLibrary.API.Brokers.Loggings;
+using CourseLibrary.API.Contracts.Users;
 using CourseLibrary.API.Filters;
+using CourseLibrary.API.Models.Categories;
 using CourseLibrary.API.Models.Exceptions;
 using CourseLibrary.API.Models.Users;
 using CourseLibrary.API.Pagination;
@@ -16,10 +18,12 @@ namespace CourseLibrary.API.Controllers.V1;
 [ServiceFilter(typeof(EndpointElapsedTimeFilter))]
 public class UsersController : BaseController
 {
+    private readonly ILoggingBroker<UsersController> _loggingBroker;
     private readonly IUserOrchestrationService _userOrchestrationService;
 
-    public UsersController(IUserOrchestrationService userOrchestrationService)
+    public UsersController(ILoggingBroker<UsersController> loggingBroker, IUserOrchestrationService userOrchestrationService)
     {
+        _loggingBroker = loggingBroker ?? throw new ArgumentNullException(nameof(loggingBroker));
         _userOrchestrationService = userOrchestrationService ?? throw new ArgumentNullException(nameof(userOrchestrationService));
     }
 
@@ -37,27 +41,9 @@ public class UsersController : BaseController
 
             return Ok((UserDto)user);
         }
-        catch (CancellationException) { return NoContent(); }
-        catch (ValidationException validationException)
-           when (validationException.InnerException is NotFoundEntityException<User>)
+        catch (Exception exception)
         {
-            string innerMessage = GetInnerMessage(validationException);
-
-            return NotFound(innerMessage);
-        }
-        catch (ValidationException validationException)
-        {
-            SetModelState(ModelState, validationException);
-
-            return apiBehaviorOptions.Value.InvalidModelStateResponseFactory(ControllerContext);
-        }
-        catch (DependencyException<UserFoundationService> dependencyException)
-        {
-            return Problem(dependencyException.Message);
-        }
-        catch (ServiceException<UserFoundationService> serviceException)
-        {
-            return Problem(serviceException.Message);
+            return HandleException(exception, apiBehaviorOptions, ControllerContext);
         }
     }
 
@@ -76,32 +62,9 @@ public class UsersController : BaseController
 
             return CreatedAtRoute(nameof(GetUserAsync), new { userId = addedUser.Id }, (UserDto)addedUser);
         }
-        catch (CancellationException) { return NoContent(); }
-        catch (ValidationException validationException)
-           when (validationException.InnerException is NotFoundEntityException<User>)
+        catch (Exception exception)
         {
-            string innerMessage = GetInnerMessage(validationException);
-
-            return NotFound(innerMessage);
-        }
-        catch (ValidationException validationException)
-        {
-            SetModelState(ModelState, validationException);
-
-            return apiBehaviorOptions.Value.InvalidModelStateResponseFactory(ControllerContext);
-        }
-        catch (DependencyException<UserFoundationService> dependencyException)
-            when (dependencyException.InnerException is DbConflictException)
-        {
-            return Conflict(dependencyException.Message);
-        }
-        catch (DependencyException<UserFoundationService> dependencyException)
-        {
-            return Problem(dependencyException.Message);
-        }
-        catch (ServiceException<UserFoundationService> serviceException)
-        {
-            return Problem(serviceException.Message);
+            return HandleException(exception, apiBehaviorOptions, ControllerContext);
         }
     }
 
@@ -120,39 +83,9 @@ public class UsersController : BaseController
 
             return Ok((UserDto)storageUser);
         }
-        catch (CancellationException) { return NoContent(); }
-        catch (ValidationException validationException)
-           when (validationException.InnerException is NotFoundEntityException<User>)
+        catch (Exception exception)
         {
-            string innerMessage = GetInnerMessage(validationException);
-
-            return NotFound(innerMessage);
-        }
-        catch (ValidationException validationException)
-        {
-            SetModelState(ModelState, validationException);
-
-            return apiBehaviorOptions.Value.InvalidModelStateResponseFactory(ControllerContext);
-        }
-        catch (DependencyException<UserFoundationService> dependencyException)
-            when (dependencyException.InnerException is DbConflictException)
-        {
-            return Conflict(dependencyException.Message);
-        }
-        catch (DependencyException<UserFoundationService> dependencyException)
-            when (dependencyException.InnerException is LockedEntityException<User>)
-        {
-            string innerMessage = GetInnerMessage(dependencyException);
-
-            return Problem(innerMessage);
-        }
-        catch (DependencyException<UserFoundationService> dependencyException)
-        {
-            return Problem(dependencyException.Message);
-        }
-        catch (ServiceException<UserFoundationService> serviceException)
-        {
-            return Problem(serviceException.Message);
+            return HandleException(exception, apiBehaviorOptions, ControllerContext);
         }
     }
 
@@ -189,17 +122,9 @@ public class UsersController : BaseController
 
             return Ok(usersDtos);
         }
-        catch (ResourceParametersException resourceParametersException)
+        catch (Exception exception)
         {
-            return BadRequest(resourceParametersException.Message);
-        }
-        catch (DependencyException<UserFoundationService> dependencyException)
-        {
-            return Problem(dependencyException.Message);
-        }
-        catch (ServiceException<UserFoundationService> serviceException)
-        {
-            return Problem(serviceException.Message);
+            return (ActionResult)HandleException(exception);
         }
     }
 
@@ -244,5 +169,36 @@ public class UsersController : BaseController
         }
 
         return resourceUri is null ? string.Empty : resourceUri.Replace("http://", "https://");
+    }
+
+    private IActionResult HandleException(Exception exception, IOptions<ApiBehaviorOptions>? apiBehaviorOptions = null, ActionContext? actionContext = null)
+    {
+        switch (exception)
+        {
+            case ResourceParametersException:
+                return BadRequest(exception.Message);
+            case CancellationException:
+                return NoContent();
+            case ValidationException when exception.InnerException is NotFoundEntityException<Category>:
+                return NotFound(GetInnerMessage(exception));
+            case ValidationException:
+                if (apiBehaviorOptions is null || actionContext is null)
+                {
+                    throw new ArgumentNullException(nameof(apiBehaviorOptions));
+                }
+
+                SetModelState(ModelState, (ValidationException)exception);
+
+                return apiBehaviorOptions!.Value.InvalidModelStateResponseFactory(actionContext!);
+            case IDependencyException when (exception.InnerException is DbConflictException):
+                return Conflict(exception.Message);
+            case IDependencyException when (exception.InnerException is LockedEntityException<Category>):
+                return Problem(GetInnerMessage(exception));
+            case IServiceException:
+                return Problem(StaticData.ControllerMessages.InternalServerError);
+            default:
+                _loggingBroker.LogError(exception);
+                return Problem(StaticData.ControllerMessages.InternalServerError);
+        }
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace CourseLibrary.API.Brokers.Loggings;
 
-internal interface ILoggingBroker<T> where T : class
+public interface ILoggingBroker<T> where T : class
 {
     bool IsEnabled(LogLevel logLevel);
 
@@ -16,4 +16,3 @@ internal interface ILoggingBroker<T> where T : class
 
     void LogCritical(Exception exception);
 }
-

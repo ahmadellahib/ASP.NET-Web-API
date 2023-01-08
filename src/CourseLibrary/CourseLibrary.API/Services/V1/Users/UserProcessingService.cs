@@ -29,14 +29,9 @@ internal sealed class UserProcessingService : IUserProcessingService
 
             return await _userFoundationService.CreateUserAsync(user, cancellationToken);
         }
-        catch (CancellationException) { throw; }
-        catch (ResourceParametersException) { throw; }
-        catch (ValidationException) { throw; }
-        catch (DependencyException<UserFoundationService>) { throw; }
-        catch (ServiceException<UserFoundationService>) { throw; }
         catch (Exception exception)
         {
-            throw _servicesExceptionsLogger.CreateAndLogServiceException(exception);
+            throw HandleException(exception);
         }
     }
 
@@ -48,14 +43,9 @@ internal sealed class UserProcessingService : IUserProcessingService
 
             return await _userFoundationService.ModifyUserAsync(user, cancellationToken);
         }
-        catch (CancellationException) { throw; }
-        catch (ResourceParametersException) { throw; }
-        catch (ValidationException) { throw; }
-        catch (DependencyException<UserFoundationService>) { throw; }
-        catch (ServiceException<UserFoundationService>) { throw; }
         catch (Exception exception)
         {
-            throw _servicesExceptionsLogger.CreateAndLogServiceException(exception);
+            throw HandleException(exception);
         }
     }
 
@@ -93,7 +83,16 @@ internal sealed class UserProcessingService : IUserProcessingService
         }
         catch (Exception exception)
         {
-            throw _servicesExceptionsLogger.CreateAndLogServiceException(exception);
+            throw HandleException(exception);
         }
+    }
+
+    private Exception HandleException(Exception exception)
+    {
+        throw exception switch
+        {
+            ResourceParametersException or CancellationException or ValidationException or IDependencyException or IServiceException => exception,
+            _ => _servicesExceptionsLogger.CreateAndLogServiceException(exception),
+        };
     }
 }

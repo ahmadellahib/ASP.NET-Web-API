@@ -1,4 +1,6 @@
 ﻿using CategoryLibrary.API.Services.V1.Categories;
+using CourseLibrary.API;
+using CourseLibrary.API.Brokers.Loggings;
 using CourseLibrary.API.Contracts.Categories;
 using CourseLibrary.API.Filters;
 using CourseLibrary.API.Models.Categories;
@@ -14,10 +16,12 @@ namespace CategoryLibrary.API.Controllers.V1;
 [ServiceFilter(typeof(EndpointElapsedTimeFilter))]
 public class CategoriesController : BaseController
 {
+    private readonly ILoggingBroker<CategoriesController> _loggingBroker;
     private readonly ICategoryOrchestrationService _categoryOrchestrationService;
 
-    public CategoriesController(ICategoryOrchestrationService categoryOrchestrationService)
+    public CategoriesController(ILoggingBroker<CategoriesController> loggingBroker, ICategoryOrchestrationService categoryOrchestrationService)
     {
+        _loggingBroker = loggingBroker ?? throw new ArgumentNullException(nameof(loggingBroker));
         _categoryOrchestrationService = categoryOrchestrationService ?? throw new ArgumentNullException(nameof(categoryOrchestrationService));
     }
 
@@ -128,8 +132,11 @@ public class CategoriesController : BaseController
                 return Conflict(exception.Message);
             case IDependencyException when (exception.InnerException is LockedEntityException<Category>):
                 return Problem(GetInnerMessage(exception));
+            case IServiceException:
+                return Problem(StaticData.ControllerMessages.InternalServerError);
             default:
-                return Problem(exception.Message);
+                _loggingBroker.LogError(exception);
+                return Problem(StaticData.ControllerMessages.InternalServerError);
         }
     }
 }
