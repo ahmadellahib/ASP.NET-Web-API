@@ -1,7 +1,6 @@
 ﻿using CourseLibrary.API.Brokers.Loggings;
 using CourseLibrary.API.Contracts.Users;
 using CourseLibrary.API.Filters;
-using CourseLibrary.API.Models.Categories;
 using CourseLibrary.API.Models.Exceptions;
 using CourseLibrary.API.Models.Users;
 using CourseLibrary.API.Pagination;
@@ -179,7 +178,7 @@ public class UsersController : BaseController
                 return BadRequest(exception.Message);
             case CancellationException:
                 return NoContent();
-            case ValidationException when exception.InnerException is NotFoundEntityException<Category>:
+            case ValidationException when exception.InnerException is NotFoundEntityException<User>:
                 return NotFound(GetInnerMessage(exception));
             case ValidationException:
                 if (apiBehaviorOptions is null || actionContext is null)
@@ -192,7 +191,7 @@ public class UsersController : BaseController
                 return apiBehaviorOptions!.Value.InvalidModelStateResponseFactory(actionContext!);
             case IDependencyException when (exception.InnerException is DbConflictException):
                 return Conflict(exception.Message);
-            case IDependencyException when (exception.InnerException is LockedEntityException<Category>):
+            case IDependencyException when (exception.InnerException is LockedEntityException<User>):
                 return Problem(GetInnerMessage(exception));
             case IServiceException:
                 return Problem(StaticData.ControllerMessages.InternalServerError);

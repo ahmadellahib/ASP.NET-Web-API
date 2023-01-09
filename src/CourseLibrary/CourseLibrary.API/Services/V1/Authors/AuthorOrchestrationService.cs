@@ -42,18 +42,9 @@ internal sealed class AuthorOrchestrationService : IAuthorOrchestrationService
 
             return await _authorProcessingService.ModifyAuthorAsync(author, cancellationToken);
         }
-        catch (CancellationException) { throw; }
-        catch (ResourceParametersException) { throw; }
-        catch (ValidationException) { throw; }
-        catch (DependencyException<AuthorFoundationService>) { throw; }
-        catch (ServiceException<AuthorFoundationService>) { throw; }
-        catch (EntityConcurrencyException<Author> entityConcurrencyException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogValidationException(entityConcurrencyException);
-        }
         catch (Exception exception)
         {
-            throw _servicesExceptionsLogger.CreateAndLogServiceException(exception);
+            throw HandleException(exception);
         }
     }
 
@@ -64,14 +55,9 @@ internal sealed class AuthorOrchestrationService : IAuthorOrchestrationService
             await _courseOrchestrationService.RemoveCoursesByAuthorIdAsync(authorId, cancellationToken);
             await _authorProcessingService.RemoveAuthorByIdAsync(authorId, cancellationToken);
         }
-        catch (CancellationException) { throw; }
-        catch (ResourceParametersException) { throw; }
-        catch (ValidationException) { throw; }
-        catch (DependencyException<AuthorFoundationService>) { throw; }
-        catch (ServiceException<AuthorFoundationService>) { throw; }
         catch (Exception exception)
         {
-            throw _servicesExceptionsLogger.CreateAndLogServiceException(exception);
+            throw HandleException(exception);
         }
     }
 
@@ -85,14 +71,9 @@ internal sealed class AuthorOrchestrationService : IAuthorOrchestrationService
 
             return author;
         }
-        catch (CancellationException) { throw; }
-        catch (ResourceParametersException) { throw; }
-        catch (ValidationException) { throw; }
-        catch (DependencyException<AuthorFoundationService>) { throw; }
-        catch (ServiceException<AuthorFoundationService>) { throw; }
         catch (Exception exception)
         {
-            throw _servicesExceptionsLogger.CreateAndLogServiceException(exception);
+            throw HandleException(exception);
         }
     }
     public IEnumerable<Author> RetrieveAllAuthors()
@@ -109,10 +90,9 @@ internal sealed class AuthorOrchestrationService : IAuthorOrchestrationService
 
             return authors;
         }
-        catch (ServiceException<AuthorFoundationService>) { throw; }
         catch (Exception exception)
         {
-            throw _servicesExceptionsLogger.CreateAndLogServiceException(exception);
+            throw HandleException(exception);
         }
     }
 
@@ -131,10 +111,19 @@ internal sealed class AuthorOrchestrationService : IAuthorOrchestrationService
 
             return pagesListAuthors;
         }
-        catch (ServiceException<AuthorFoundationService>) { throw; }
         catch (Exception exception)
         {
-            throw _servicesExceptionsLogger.CreateAndLogServiceException(exception);
+            throw HandleException(exception);
         }
+    }
+
+    private Exception HandleException(Exception exception)
+    {
+        throw exception switch
+        {
+            ResourceParametersException or CancellationException or ValidationException or IDependencyException or IServiceException => exception,
+            EntityConcurrencyException<Author> => _servicesExceptionsLogger.CreateAndLogValidationException(exception),
+            _ => _servicesExceptionsLogger.CreateAndLogServiceException(exception),
+        };
     }
 }

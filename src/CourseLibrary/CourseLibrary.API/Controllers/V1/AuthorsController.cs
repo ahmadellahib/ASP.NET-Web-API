@@ -1,4 +1,5 @@
-﻿using CourseLibrary.API.Contracts.Authors;
+﻿using CourseLibrary.API.Brokers.Loggings;
+using CourseLibrary.API.Contracts.Authors;
 using CourseLibrary.API.Filters;
 using CourseLibrary.API.Models.Authors;
 using CourseLibrary.API.Models.Exceptions;
@@ -16,10 +17,12 @@ namespace CourseLibrary.API.Controllers.V1;
 [ServiceFilter(typeof(EndpointElapsedTimeFilter))]
 public class AuthorsController : BaseController
 {
+    private readonly ILoggingBroker<AuthorsController> _loggingBroker;
     private readonly IAuthorOrchestrationService _authorOrchestrationService;
 
-    public AuthorsController(IAuthorOrchestrationService authorOrchestrationService)
+    public AuthorsController(ILoggingBroker<AuthorsController> loggingBroker, IAuthorOrchestrationService authorOrchestrationService)
     {
+        _loggingBroker = loggingBroker ?? throw new ArgumentNullException(nameof(loggingBroker));
         _authorOrchestrationService = authorOrchestrationService ?? throw new ArgumentNullException(nameof(authorOrchestrationService));
     }
 
@@ -37,27 +40,9 @@ public class AuthorsController : BaseController
 
             return Ok((AuthorDto)author);
         }
-        catch (CancellationException) { return NoContent(); }
-        catch (ValidationException validationException)
-           when (validationException.InnerException is NotFoundEntityException<Author>)
+        catch (Exception exception)
         {
-            string innerMessage = GetInnerMessage(validationException);
-
-            return NotFound(innerMessage);
-        }
-        catch (ValidationException validationException)
-        {
-            SetModelState(ModelState, validationException);
-
-            return apiBehaviorOptions.Value.InvalidModelStateResponseFactory(ControllerContext);
-        }
-        catch (DependencyException<AuthorFoundationService> dependencyException)
-        {
-            return Problem(dependencyException.Message);
-        }
-        catch (ServiceException<AuthorFoundationService> serviceException)
-        {
-            return Problem(serviceException.Message);
+            return HandleException(exception, apiBehaviorOptions, ControllerContext);
         }
     }
 
@@ -76,32 +61,9 @@ public class AuthorsController : BaseController
 
             return CreatedAtRoute(nameof(GetAuthorAsync), new { authorId = addedAuthor.Id }, (AuthorCreatedDto)addedAuthor);
         }
-        catch (CancellationException) { return NoContent(); }
-        catch (ValidationException validationException)
-           when (validationException.InnerException is NotFoundEntityException<Author>)
+        catch (Exception exception)
         {
-            string innerMessage = GetInnerMessage(validationException);
-
-            return NotFound(innerMessage);
-        }
-        catch (ValidationException validationException)
-        {
-            SetModelState(ModelState, validationException);
-
-            return apiBehaviorOptions.Value.InvalidModelStateResponseFactory(ControllerContext);
-        }
-        catch (DependencyException<AuthorFoundationService> dependencyException)
-            when (dependencyException.InnerException is DbConflictException)
-        {
-            return Conflict(dependencyException.Message);
-        }
-        catch (DependencyException<AuthorFoundationService> dependencyException)
-        {
-            return Problem(dependencyException.Message);
-        }
-        catch (ServiceException<AuthorFoundationService> serviceException)
-        {
-            return Problem(serviceException.Message);
+            return HandleException(exception, apiBehaviorOptions, ControllerContext);
         }
     }
 
@@ -120,39 +82,9 @@ public class AuthorsController : BaseController
 
             return Ok((AuthorUpdatedDto)storageAuthor);
         }
-        catch (CancellationException) { return NoContent(); }
-        catch (ValidationException validationException)
-           when (validationException.InnerException is NotFoundEntityException<Author>)
+        catch (Exception exception)
         {
-            string innerMessage = GetInnerMessage(validationException);
-
-            return NotFound(innerMessage);
-        }
-        catch (ValidationException validationException)
-        {
-            SetModelState(ModelState, validationException);
-
-            return apiBehaviorOptions.Value.InvalidModelStateResponseFactory(ControllerContext);
-        }
-        catch (DependencyException<AuthorFoundationService> dependencyException)
-            when (dependencyException.InnerException is DbConflictException)
-        {
-            return Conflict(dependencyException.Message);
-        }
-        catch (DependencyException<AuthorFoundationService> dependencyException)
-            when (dependencyException.InnerException is LockedEntityException<Author>)
-        {
-            string innerMessage = GetInnerMessage(dependencyException);
-
-            return Problem(innerMessage);
-        }
-        catch (DependencyException<AuthorFoundationService> dependencyException)
-        {
-            return Problem(dependencyException.Message);
-        }
-        catch (ServiceException<AuthorFoundationService> serviceException)
-        {
-            return Problem(serviceException.Message);
+            return HandleException(exception, apiBehaviorOptions, ControllerContext);
         }
     }
 
@@ -170,39 +102,9 @@ public class AuthorsController : BaseController
 
             return NoContent();
         }
-        catch (CancellationException) { return NoContent(); }
-        catch (ValidationException validationException)
-           when (validationException.InnerException is NotFoundEntityException<Author>)
+        catch (Exception exception)
         {
-            string innerMessage = GetInnerMessage(validationException);
-
-            return NotFound(innerMessage);
-        }
-        catch (ValidationException validationException)
-        {
-            SetModelState(ModelState, validationException);
-
-            return apiBehaviorOptions.Value.InvalidModelStateResponseFactory(ControllerContext);
-        }
-        catch (DependencyException<AuthorFoundationService> dependencyException)
-            when (dependencyException.InnerException is DbConflictException)
-        {
-            return Conflict(dependencyException.Message);
-        }
-        catch (DependencyException<AuthorFoundationService> dependencyException)
-            when (dependencyException.InnerException is LockedEntityException<Author>)
-        {
-            string innerMessage = GetInnerMessage(dependencyException);
-
-            return Problem(innerMessage);
-        }
-        catch (DependencyException<AuthorFoundationService> dependencyException)
-        {
-            return Problem(dependencyException.Message);
-        }
-        catch (ServiceException<AuthorFoundationService> serviceException)
-        {
-            return Problem(serviceException.Message);
+            return HandleException(exception, apiBehaviorOptions, ControllerContext);
         }
     }
 
@@ -239,17 +141,9 @@ public class AuthorsController : BaseController
 
             return Ok(authorsDtos);
         }
-        catch (ResourceParametersException resourceParametersException)
+        catch (Exception exception)
         {
-            return BadRequest(resourceParametersException.Message);
-        }
-        catch (DependencyException<AuthorFoundationService> dependencyException)
-        {
-            return Problem(dependencyException.Message);
-        }
-        catch (ServiceException<AuthorFoundationService> serviceException)
-        {
-            return Problem(serviceException.Message);
+            return (ActionResult)HandleException(exception);
         }
     }
 
@@ -294,5 +188,36 @@ public class AuthorsController : BaseController
         }
 
         return resourceUri is null ? string.Empty : resourceUri.Replace("http://", "https://");
+    }
+
+    private IActionResult HandleException(Exception exception, IOptions<ApiBehaviorOptions>? apiBehaviorOptions = null, ActionContext? actionContext = null)
+    {
+        switch (exception)
+        {
+            case ResourceParametersException:
+                return BadRequest(exception.Message);
+            case CancellationException:
+                return NoContent();
+            case ValidationException when exception.InnerException is NotFoundEntityException<Author>:
+                return NotFound(GetInnerMessage(exception));
+            case ValidationException:
+                if (apiBehaviorOptions is null || actionContext is null)
+                {
+                    throw new ArgumentNullException(nameof(apiBehaviorOptions));
+                }
+
+                SetModelState(ModelState, (ValidationException)exception);
+
+                return apiBehaviorOptions!.Value.InvalidModelStateResponseFactory(actionContext!);
+            case IDependencyException when (exception.InnerException is DbConflictException):
+                return Conflict(exception.Message);
+            case IDependencyException when (exception.InnerException is LockedEntityException<Author>):
+                return Problem(GetInnerMessage(exception));
+            case IServiceException:
+                return Problem(StaticData.ControllerMessages.InternalServerError);
+            default:
+                _loggingBroker.LogError(exception);
+                return Problem(StaticData.ControllerMessages.InternalServerError);
+        }
     }
 }

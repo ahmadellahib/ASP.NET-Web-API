@@ -29,14 +29,9 @@ internal sealed class AuthorProcessingService : IAuthorProcessingService
 
             return await _authorFoundationService.CreateAuthorAsync(author, cancellationToken);
         }
-        catch (CancellationException) { throw; }
-        catch (ResourceParametersException) { throw; }
-        catch (ValidationException) { throw; }
-        catch (DependencyException<AuthorFoundationService>) { throw; }
-        catch (ServiceException<AuthorFoundationService>) { throw; }
         catch (Exception exception)
         {
-            throw _servicesExceptionsLogger.CreateAndLogServiceException(exception);
+            throw HandleException(exception);
         }
     }
 
@@ -48,14 +43,9 @@ internal sealed class AuthorProcessingService : IAuthorProcessingService
 
             return await _authorFoundationService.ModifyAuthorAsync(author, cancellationToken);
         }
-        catch (CancellationException) { throw; }
-        catch (ResourceParametersException) { throw; }
-        catch (ValidationException) { throw; }
-        catch (DependencyException<AuthorFoundationService>) { throw; }
-        catch (ServiceException<AuthorFoundationService>) { throw; }
         catch (Exception exception)
         {
-            throw _servicesExceptionsLogger.CreateAndLogServiceException(exception);
+            throw HandleException(exception);
         }
     }
 
@@ -89,7 +79,16 @@ internal sealed class AuthorProcessingService : IAuthorProcessingService
         }
         catch (Exception exception)
         {
-            throw _servicesExceptionsLogger.CreateAndLogServiceException(exception);
+            throw HandleException(exception);
         }
+    }
+
+    private Exception HandleException(Exception exception)
+    {
+        throw exception switch
+        {
+            ResourceParametersException or CancellationException or ValidationException or IDependencyException or IServiceException => exception,
+            _ => _servicesExceptionsLogger.CreateAndLogServiceException(exception),
+        };
     }
 }
