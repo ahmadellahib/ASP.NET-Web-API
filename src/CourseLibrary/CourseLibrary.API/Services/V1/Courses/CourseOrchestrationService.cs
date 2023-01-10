@@ -34,18 +34,9 @@ internal sealed class CourseOrchestrationService : ICourseOrchestrationService
 
             return await _courseProcessingService.ModifyCourseAsync(course, cancellationToken);
         }
-        catch (CancellationException) { throw; }
-        catch (ResourceParametersException) { throw; }
-        catch (ValidationException) { throw; }
-        catch (DependencyException<CourseFoundationService>) { throw; }
-        catch (ServiceException<CourseFoundationService>) { throw; }
-        catch (EntityConcurrencyException<Course> entityConcurrencyException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogValidationException(entityConcurrencyException);
-        }
         catch (Exception exception)
         {
-            throw _servicesExceptionsLogger.CreateAndLogServiceException(exception);
+            throw HandleException(exception);
         }
     }
 
@@ -71,7 +62,17 @@ internal sealed class CourseOrchestrationService : ICourseOrchestrationService
         }
         catch (Exception exception)
         {
-            throw _servicesExceptionsLogger.CreateAndLogServiceException(exception);
+            throw HandleException(exception);
         }
+    }
+
+    private Exception HandleException(Exception exception)
+    {
+        throw exception switch
+        {
+            ResourceParametersException or CancellationException or ValidationException or IDependencyException or IServiceException => exception,
+            EntityConcurrencyException<Course> => _servicesExceptionsLogger.CreateAndLogValidationException(exception),
+            _ => _servicesExceptionsLogger.CreateAndLogServiceException(exception),
+        };
     }
 }

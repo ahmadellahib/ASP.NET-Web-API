@@ -2,7 +2,6 @@
 using CourseLibrary.API.Brokers.Storages;
 using CourseLibrary.API.Models.Courses;
 using CourseLibrary.API.Models.Exceptions;
-using CourseLibrary.API.Services.V1.PropertyMappings;
 using CourseLibrary.API.Validators.Courses;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
@@ -12,19 +11,16 @@ namespace CourseLibrary.API.Services.V1.Courses;
 internal sealed class CourseFoundationService : ICourseFoundationService
 {
     private readonly IStorageBroker _storageBroker;
-    private readonly IPropertyMappingService _propertyMappingService;
     private readonly IServicesLogicValidator _servicesLogicValidator;
     private readonly ILoggingBroker<CourseFoundationService> _loggingBroker;
     private readonly IServicesExceptionsLogger<CourseFoundationService> _servicesExceptionsLogger;
 
     public CourseFoundationService(IStorageBroker storageBroker,
-        IPropertyMappingService propertyMappingService,
         IServicesLogicValidator servicesLogicValidator,
         ILoggingBroker<CourseFoundationService> loggingBroker,
         IServicesExceptionsLogger<CourseFoundationService> servicesExceptionsLogger)
     {
         _storageBroker = storageBroker ?? throw new ArgumentNullException(nameof(storageBroker));
-        _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
         _servicesLogicValidator = servicesLogicValidator ?? throw new ArgumentNullException(nameof(servicesLogicValidator));
         _loggingBroker = loggingBroker ?? throw new ArgumentNullException(nameof(loggingBroker));
         _servicesExceptionsLogger = servicesExceptionsLogger ?? throw new ArgumentNullException(nameof(servicesExceptionsLogger));
@@ -38,31 +34,9 @@ internal sealed class CourseFoundationService : ICourseFoundationService
 
             return await _storageBroker.InsertCourseAsync(course, cancellationToken);
         }
-        catch (InvalidEntityException<Course> invalidEntityException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogServiceException(invalidEntityException);
-        }
-        catch (SqlException sqlException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogCriticalDependencyException(sqlException);
-        }
-        catch (DbUpdateConcurrencyException dbUpdateConcurrencyException)
-        {
-            LockedEntityException<Course> lockedEntityException = new(dbUpdateConcurrencyException);
-
-            throw _servicesExceptionsLogger.CreateAndLogDependencyException(lockedEntityException);
-        }
-        catch (DbUpdateException dbUpdateException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogDependencyException(dbUpdateException);
-        }
-        catch (Exception exception) when (exception is OperationCanceledException || exception is TaskCanceledException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogCancellationException(exception);
-        }
         catch (Exception exception)
         {
-            throw _servicesExceptionsLogger.CreateAndLogServiceException(exception);
+            throw HandleException(exception);
         }
     }
 
@@ -74,31 +48,9 @@ internal sealed class CourseFoundationService : ICourseFoundationService
 
             return await _storageBroker.UpdateCourseAsync(course, cancellationToken);
         }
-        catch (InvalidEntityException<Course> invalidEntityException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogServiceException(invalidEntityException);
-        }
-        catch (SqlException sqlException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogCriticalDependencyException(sqlException);
-        }
-        catch (DbUpdateConcurrencyException dbUpdateConcurrencyException)
-        {
-            LockedEntityException<Course> lockedEntityException = new(dbUpdateConcurrencyException);
-
-            throw _servicesExceptionsLogger.CreateAndLogDependencyException(lockedEntityException);
-        }
-        catch (DbUpdateException dbUpdateException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogDependencyException(dbUpdateException);
-        }
-        catch (Exception exception) when (exception is OperationCanceledException || exception is TaskCanceledException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogCancellationException(exception);
-        }
         catch (Exception exception)
         {
-            throw _servicesExceptionsLogger.CreateAndLogServiceException(exception);
+            throw HandleException(exception);
         }
     }
 
@@ -119,21 +71,9 @@ internal sealed class CourseFoundationService : ICourseFoundationService
                 throw new Exception(exceptionMsg);
             }
         }
-        catch (InvalidParameterException invalidIdException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogValidationException(invalidIdException);
-        }
-        catch (NotFoundEntityException<Course> notFoundEntityException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogValidationException(notFoundEntityException);
-        }
-        catch (Exception exception) when (exception is OperationCanceledException || exception is TaskCanceledException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogCancellationException(exception);
-        }
         catch (Exception exception)
         {
-            throw _servicesExceptionsLogger.CreateAndLogServiceException(exception);
+            throw HandleException(exception);
         }
     }
 
@@ -151,21 +91,9 @@ internal sealed class CourseFoundationService : ICourseFoundationService
 
             return storageCourse!;
         }
-        catch (InvalidParameterException invalidIdException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogValidationException(invalidIdException);
-        }
-        catch (NotFoundEntityException<Course> notFoundEntityException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogValidationException(notFoundEntityException);
-        }
-        catch (Exception exception) when (exception is OperationCanceledException || exception is TaskCanceledException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogCancellationException(exception);
-        }
         catch (Exception exception)
         {
-            throw _servicesExceptionsLogger.CreateAndLogServiceException(exception);
+            throw HandleException(exception);
         }
     }
 
@@ -182,13 +110,34 @@ internal sealed class CourseFoundationService : ICourseFoundationService
 
             return storageCourses;
         }
-        catch (SqlException sqlException)
-        {
-            throw _servicesExceptionsLogger.CreateAndLogCriticalDependencyException(sqlException);
-        }
         catch (Exception exception)
         {
-            throw _servicesExceptionsLogger.CreateAndLogServiceException(exception);
+            throw HandleException(exception);
+        }
+    }
+
+    private Exception HandleException(Exception exception)
+    {
+        switch (exception)
+        {
+            case InvalidParameterException:
+            case NotFoundEntityException<Course>:
+                throw _servicesExceptionsLogger.CreateAndLogValidationException(exception);
+            case InvalidEntityException<Course>:
+                throw _servicesExceptionsLogger.CreateAndLogServiceException(exception);
+            case SqlException:
+                throw _servicesExceptionsLogger.CreateAndLogCriticalDependencyException(exception);
+            case DbUpdateConcurrencyException:
+                LockedEntityException<Course> lockedEntityException = new(exception);
+
+                throw _servicesExceptionsLogger.CreateAndLogDependencyException(lockedEntityException);
+            case DbUpdateException:
+                throw _servicesExceptionsLogger.CreateAndLogDependencyException(exception);
+            case TaskCanceledException:
+            case OperationCanceledException:
+                throw _servicesExceptionsLogger.CreateAndLogCancellationException(exception);
+            default:
+                throw _servicesExceptionsLogger.CreateAndLogServiceException(exception);
         }
     }
 }

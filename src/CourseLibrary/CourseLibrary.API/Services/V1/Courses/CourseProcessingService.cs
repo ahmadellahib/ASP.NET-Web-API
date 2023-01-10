@@ -2,7 +2,6 @@
 using CourseLibrary.API.Models.Courses;
 using CourseLibrary.API.Models.Exceptions;
 using CourseLibrary.API.Services.V1.PropertyMappings;
-using CourseLibrary.API.Services.V1.Users;
 
 namespace CourseLibrary.API.Services.V1.Courses;
 
@@ -33,14 +32,9 @@ internal sealed class CourseProcessingService : ICourseProcessingService
 
             return await _courseFoundationService.CreateCourseAsync(course, cancellationToken);
         }
-        catch (CancellationException) { throw; }
-        catch (ResourceParametersException) { throw; }
-        catch (ValidationException) { throw; }
-        catch (DependencyException<UserFoundationService>) { throw; }
-        catch (ServiceException<UserFoundationService>) { throw; }
         catch (Exception exception)
         {
-            throw _servicesExceptionsLogger.CreateAndLogServiceException(exception);
+            throw HandleException(exception);
         }
     }
 
@@ -53,14 +47,9 @@ internal sealed class CourseProcessingService : ICourseProcessingService
 
             return await _courseFoundationService.ModifyCourseAsync(course, cancellationToken);
         }
-        catch (CancellationException) { throw; }
-        catch (ResourceParametersException) { throw; }
-        catch (ValidationException) { throw; }
-        catch (DependencyException<UserFoundationService>) { throw; }
-        catch (ServiceException<UserFoundationService>) { throw; }
         catch (Exception exception)
         {
-            throw _servicesExceptionsLogger.CreateAndLogServiceException(exception);
+            throw HandleException(exception);
         }
     }
 
@@ -103,7 +92,16 @@ internal sealed class CourseProcessingService : ICourseProcessingService
         }
         catch (Exception exception)
         {
-            throw _servicesExceptionsLogger.CreateAndLogServiceException(exception);
+            throw HandleException(exception);
         }
+    }
+
+    private Exception HandleException(Exception exception)
+    {
+        throw exception switch
+        {
+            ResourceParametersException or CancellationException or ValidationException or IDependencyException or IServiceException => exception,
+            _ => _servicesExceptionsLogger.CreateAndLogServiceException(exception),
+        };
     }
 }

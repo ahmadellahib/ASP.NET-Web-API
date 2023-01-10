@@ -1,4 +1,5 @@
-﻿using CourseLibrary.API.Contracts.Courses;
+﻿using CourseLibrary.API.Brokers.Loggings;
+using CourseLibrary.API.Contracts.Courses;
 using CourseLibrary.API.Filters;
 using CourseLibrary.API.Models.Courses;
 using CourseLibrary.API.Models.Exceptions;
@@ -16,10 +17,12 @@ namespace CourseLibrary.API.Controllers.V1;
 [ServiceFilter(typeof(EndpointElapsedTimeFilter))]
 public class CoursesController : BaseController
 {
+    private readonly ILoggingBroker<CoursesController> _loggingBroker;
     private readonly ICourseOrchestrationService _courseOrchestrationService;
 
-    public CoursesController(ICourseOrchestrationService courseOrchestrationService)
+    public CoursesController(ILoggingBroker<CoursesController> loggingBroker, ICourseOrchestrationService courseOrchestrationService)
     {
+        _loggingBroker = loggingBroker ?? throw new ArgumentNullException(nameof(loggingBroker));
         _courseOrchestrationService = courseOrchestrationService ?? throw new ArgumentNullException(nameof(courseOrchestrationService));
     }
 
@@ -37,27 +40,9 @@ public class CoursesController : BaseController
 
             return Ok((CourseDto)course);
         }
-        catch (CancellationException) { return NoContent(); }
-        catch (ValidationException validationException)
-           when (validationException.InnerException is NotFoundEntityException<Course>)
+        catch (Exception exception)
         {
-            string innerMessage = GetInnerMessage(validationException);
-
-            return NotFound(innerMessage);
-        }
-        catch (ValidationException validationException)
-        {
-            SetModelState(ModelState, validationException);
-
-            return apiBehaviorOptions.Value.InvalidModelStateResponseFactory(ControllerContext);
-        }
-        catch (DependencyException<CourseFoundationService> dependencyException)
-        {
-            return Problem(dependencyException.Message);
-        }
-        catch (ServiceException<CourseFoundationService> serviceException)
-        {
-            return Problem(serviceException.Message);
+            return HandleException(exception, apiBehaviorOptions, ControllerContext);
         }
     }
 
@@ -76,32 +61,9 @@ public class CoursesController : BaseController
 
             return CreatedAtRoute(nameof(GetCourseAsync), new { courseId = addedCourse.Id }, (CourseCreatedDto)addedCourse);
         }
-        catch (CancellationException) { return NoContent(); }
-        catch (ValidationException validationException)
-           when (validationException.InnerException is NotFoundEntityException<Course>)
+        catch (Exception exception)
         {
-            string innerMessage = GetInnerMessage(validationException);
-
-            return NotFound(innerMessage);
-        }
-        catch (ValidationException validationException)
-        {
-            SetModelState(ModelState, validationException);
-
-            return apiBehaviorOptions.Value.InvalidModelStateResponseFactory(ControllerContext);
-        }
-        catch (DependencyException<CourseFoundationService> dependencyException)
-            when (dependencyException.InnerException is DbConflictException)
-        {
-            return Conflict(dependencyException.Message);
-        }
-        catch (DependencyException<CourseFoundationService> dependencyException)
-        {
-            return Problem(dependencyException.Message);
-        }
-        catch (ServiceException<CourseFoundationService> serviceException)
-        {
-            return Problem(serviceException.Message);
+            return HandleException(exception, apiBehaviorOptions, ControllerContext);
         }
     }
 
@@ -120,39 +82,9 @@ public class CoursesController : BaseController
 
             return Ok((CourseUpdatedDto)storageCourse);
         }
-        catch (CancellationException) { return NoContent(); }
-        catch (ValidationException validationException)
-           when (validationException.InnerException is NotFoundEntityException<Course>)
+        catch (Exception exception)
         {
-            string innerMessage = GetInnerMessage(validationException);
-
-            return NotFound(innerMessage);
-        }
-        catch (ValidationException validationException)
-        {
-            SetModelState(ModelState, validationException);
-
-            return apiBehaviorOptions.Value.InvalidModelStateResponseFactory(ControllerContext);
-        }
-        catch (DependencyException<CourseFoundationService> dependencyException)
-            when (dependencyException.InnerException is DbConflictException)
-        {
-            return Conflict(dependencyException.Message);
-        }
-        catch (DependencyException<CourseFoundationService> dependencyException)
-            when (dependencyException.InnerException is LockedEntityException<Course>)
-        {
-            string innerMessage = GetInnerMessage(dependencyException);
-
-            return Problem(innerMessage);
-        }
-        catch (DependencyException<CourseFoundationService> dependencyException)
-        {
-            return Problem(dependencyException.Message);
-        }
-        catch (ServiceException<CourseFoundationService> serviceException)
-        {
-            return Problem(serviceException.Message);
+            return HandleException(exception, apiBehaviorOptions, ControllerContext);
         }
     }
 
@@ -170,39 +102,9 @@ public class CoursesController : BaseController
 
             return NoContent();
         }
-        catch (CancellationException) { return NoContent(); }
-        catch (ValidationException validationException)
-           when (validationException.InnerException is NotFoundEntityException<Course>)
+        catch (Exception exception)
         {
-            string innerMessage = GetInnerMessage(validationException);
-
-            return NotFound(innerMessage);
-        }
-        catch (ValidationException validationException)
-        {
-            SetModelState(ModelState, validationException);
-
-            return apiBehaviorOptions.Value.InvalidModelStateResponseFactory(ControllerContext);
-        }
-        catch (DependencyException<CourseFoundationService> dependencyException)
-            when (dependencyException.InnerException is DbConflictException)
-        {
-            return Conflict(dependencyException.Message);
-        }
-        catch (DependencyException<CourseFoundationService> dependencyException)
-            when (dependencyException.InnerException is LockedEntityException<Course>)
-        {
-            string innerMessage = GetInnerMessage(dependencyException);
-
-            return Problem(innerMessage);
-        }
-        catch (DependencyException<CourseFoundationService> dependencyException)
-        {
-            return Problem(dependencyException.Message);
-        }
-        catch (ServiceException<CourseFoundationService> serviceException)
-        {
-            return Problem(serviceException.Message);
+            return HandleException(exception, apiBehaviorOptions, ControllerContext);
         }
     }
 
@@ -239,17 +141,9 @@ public class CoursesController : BaseController
 
             return Ok(coursesDtos);
         }
-        catch (ResourceParametersException resourceParametersException)
+        catch (Exception exception)
         {
-            return BadRequest(resourceParametersException.Message);
-        }
-        catch (DependencyException<CourseFoundationService> dependencyException)
-        {
-            return Problem(dependencyException.Message);
-        }
-        catch (ServiceException<CourseFoundationService> serviceException)
-        {
-            return Problem(serviceException.Message);
+            return (ActionResult)HandleException(exception);
         }
     }
 
@@ -294,5 +188,36 @@ public class CoursesController : BaseController
         }
 
         return resourceUri is null ? string.Empty : resourceUri.Replace("http://", "https://");
+    }
+
+    private IActionResult HandleException(Exception exception, IOptions<ApiBehaviorOptions>? apiBehaviorOptions = null, ActionContext? actionContext = null)
+    {
+        switch (exception)
+        {
+            case ResourceParametersException:
+                return BadRequest(exception.Message);
+            case CancellationException:
+                return NoContent();
+            case ValidationException when exception.InnerException is NotFoundEntityException<Course>:
+                return NotFound(GetInnerMessage(exception));
+            case ValidationException:
+                if (apiBehaviorOptions is null || actionContext is null)
+                {
+                    throw new ArgumentNullException(nameof(apiBehaviorOptions));
+                }
+
+                SetModelState(ModelState, (ValidationException)exception);
+
+                return apiBehaviorOptions!.Value.InvalidModelStateResponseFactory(actionContext!);
+            case IDependencyException when (exception.InnerException is DbConflictException):
+                return Conflict(exception.Message);
+            case IDependencyException when (exception.InnerException is LockedEntityException<Course>):
+                return Problem(GetInnerMessage(exception));
+            case IServiceException:
+                return Problem(StaticData.ControllerMessages.InternalServerError);
+            default:
+                _loggingBroker.LogError(exception);
+                return Problem(StaticData.ControllerMessages.InternalServerError);
+        }
     }
 }
