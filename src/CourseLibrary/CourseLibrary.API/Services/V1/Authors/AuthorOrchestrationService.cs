@@ -28,15 +28,38 @@ internal sealed class AuthorOrchestrationService : IAuthorOrchestrationService
         _servicesExceptionsLogger = servicesExceptionsLogger ?? throw new ArgumentNullException(nameof(servicesExceptionsLogger));
     }
 
-    public async Task<Author> CreateAuthorAsync(Author author, CancellationToken cancellationToken) =>
-        await _authorProcessingService.CreateAuthorAsync(author, cancellationToken);
+    public async Task<Author> CreateAuthorAsync(Author author, CancellationToken cancellationToken)
+    {
+        try
+        {
+            Category? category = _categoryOrchestrationService.RetrieveAllCategories()
+                .SingleOrDefault(c => c.Id == author.MainCategoryId);
 
+            if (category is null)
+                throw new InvalidParameterException(nameof(author.MainCategoryId), $"Category with id {author.MainCategoryId} does not exist.");
+
+            return await _authorProcessingService.CreateAuthorAsync(author, cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            throw HandleException(exception);
+        }
+    }
     public async Task<Author> ModifyAuthorAsync(Author author, CancellationToken cancellationToken)
     {
         try
         {
             Author storageAuthor = await _authorProcessingService.RetrieveAuthorByIdAsync(author.Id, cancellationToken);
             _servicesLogicValidator.ValidateEntityConcurrency<Author>(author, storageAuthor);
+
+            if (author.MainCategoryId != storageAuthor.MainCategoryId)
+            {
+                Category? category = _categoryOrchestrationService.RetrieveAllCategories()
+                    .SingleOrDefault(c => c.Id == author.MainCategoryId);
+
+                if (category is null)
+                    throw new InvalidParameterException(nameof(author.MainCategoryId), $"Category with id {author.MainCategoryId} does not exist.");
+            }
 
             author.UserId = storageAuthor.UserId;
 
@@ -122,7 +145,7 @@ internal sealed class AuthorOrchestrationService : IAuthorOrchestrationService
         throw exception switch
         {
             ResourceParametersException or CancellationException or ValidationException or IDependencyException or IServiceException => exception,
-            EntityConcurrencyException<Author> => _servicesExceptionsLogger.CreateAndLogValidationException(exception),
+            EntityConcurrencyException<Author> or InvalidParameterException => _servicesExceptionsLogger.CreateAndLogValidationException(exception),
             _ => _servicesExceptionsLogger.CreateAndLogServiceException(exception),
         };
     }

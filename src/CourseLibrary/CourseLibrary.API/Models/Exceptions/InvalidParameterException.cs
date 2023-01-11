@@ -8,4 +8,9 @@ public class InvalidParameterException : Exception
     {
         PropertyName = parameterName;
     }
+
+    public InvalidParameterException(string parameterName, string message) : base(message)
+    {
+        PropertyName = parameterName;
+    }
 }
