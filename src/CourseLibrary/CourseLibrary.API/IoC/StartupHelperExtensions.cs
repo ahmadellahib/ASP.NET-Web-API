@@ -20,6 +20,7 @@ using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 namespace CourseLibrary.API.IoC;
 
@@ -37,6 +38,18 @@ internal static class StartupHelperExtensions
             .AddControllers();
 
         return builder.Build();
+    }
+
+    public static WebApplicationBuilder ConfigureSerilog(this WebApplicationBuilder builder)
+    {
+        Log.Logger = new LoggerConfiguration()
+            .ReadFrom
+            .Configuration(builder.Configuration)
+            .CreateLogger();
+
+        builder.Host.UseSerilog();
+
+        return builder;
     }
 
     public static WebApplication ConfigurePipeline(this WebApplication app)
@@ -95,7 +108,7 @@ internal static class StartupHelperExtensions
         }
         catch (Exception ex)
         {
-            ILogger logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+            Microsoft.Extensions.Logging.ILogger logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
             logger.LogError(ex, "An error occurred while migrating the database.");
         }
     }

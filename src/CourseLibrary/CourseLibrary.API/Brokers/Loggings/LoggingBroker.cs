@@ -18,8 +18,8 @@ internal sealed class LoggingBroker<T> : ILoggingBroker<T> where T : class
     public void LogTrace(string message) =>
         _logger.LogTrace(message);
 
-    public void LogInformation(string message) =>
-        _logger.LogInformation(message);
+    public void LogInformation(string message, params object?[] args) =>
+        _logger.LogInformation(message, args);
 
     public void LogWarning(string message) =>
         _logger.LogWarning(message);

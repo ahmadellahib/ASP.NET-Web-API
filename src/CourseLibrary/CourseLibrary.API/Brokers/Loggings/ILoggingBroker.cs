@@ -8,7 +8,7 @@ public interface ILoggingBroker<T> where T : class
 
     void LogDebug(string message);
 
-    void LogInformation(string message);
+    void LogInformation(string message, params object?[] args);
 
     void LogWarning(string message);
 

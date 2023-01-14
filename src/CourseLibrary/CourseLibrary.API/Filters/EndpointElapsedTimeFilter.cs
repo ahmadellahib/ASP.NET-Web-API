@@ -21,10 +21,8 @@ internal sealed class EndpointElapsedTimeFilter : IAsyncActionFilter
         await next();
 
         // Do something after the action executes.
-        string _elapsedTimeMessage = String.Format("Elapsed time for '{0}' response: {1}ms",
+        _logger.LogInformation("Elapsed time for '{RequestPath}' response: {ElapsedTime} ms",
                                context.HttpContext.Request.Path,
                                Stopwatch.GetElapsedTime(startTime).TotalMilliseconds);
-
-        _logger.LogInformation(_elapsedTimeMessage);
     }
 }
