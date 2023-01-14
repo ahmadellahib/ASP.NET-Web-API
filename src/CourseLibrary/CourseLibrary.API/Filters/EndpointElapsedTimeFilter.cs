@@ -6,7 +6,6 @@ namespace CourseLibrary.API.Filters;
 
 internal sealed class EndpointElapsedTimeFilter : IAsyncActionFilter
 {
-    private Stopwatch? stopWatch;
     private readonly ILoggingBroker<EndpointElapsedTimeFilter> _logger;
 
     public EndpointElapsedTimeFilter(ILoggingBroker<EndpointElapsedTimeFilter> logger)
@@ -17,16 +16,14 @@ internal sealed class EndpointElapsedTimeFilter : IAsyncActionFilter
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
         // Do something before the action executes.
-        stopWatch = Stopwatch.StartNew();
+        long startTime = Stopwatch.GetTimestamp();
 
         await next();
 
         // Do something after the action executes.
-        stopWatch.Stop();
-
         string _elapsedTimeMessage = String.Format("Elapsed time for '{0}' response: {1}ms",
                                context.HttpContext.Request.Path,
-                               stopWatch.ElapsedMilliseconds);
+                               Stopwatch.GetElapsedTime(startTime).TotalMilliseconds);
 
         _logger.LogInformation(_elapsedTimeMessage);
     }
