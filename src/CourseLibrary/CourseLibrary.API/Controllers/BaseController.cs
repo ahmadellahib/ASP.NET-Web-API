@@ -1,9 +1,15 @@
-﻿using CourseLibrary.API.Models.Exceptions;
+﻿using CourseLibrary.API.Brokers.Loggings;
+using CourseLibrary.API.Models.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
-public abstract class BaseController : ControllerBase
+public abstract class BaseController<T> : ControllerBase where T : BaseController<T>
 {
+    private ILoggingBroker<T>? _loggingBroker;
+
+    protected ILoggingBroker<T> LoggingBroker =>
+        _loggingBroker ??= HttpContext.RequestServices.GetRequiredService<ILoggingBroker<T>>();
+
     protected static string GetInnerMessage(Exception exception)
     {
         if (exception is not null && exception.InnerException is not null)

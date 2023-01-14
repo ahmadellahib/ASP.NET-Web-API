@@ -1,5 +1,4 @@
-﻿using CourseLibrary.API.Brokers.Loggings;
-using CourseLibrary.API.Contracts.Users;
+﻿using CourseLibrary.API.Contracts.Users;
 using CourseLibrary.API.Filters;
 using CourseLibrary.API.Models.Exceptions;
 using CourseLibrary.API.Models.Users;
@@ -15,14 +14,12 @@ namespace CourseLibrary.API.Controllers.V1;
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/[controller]")]
 [ServiceFilter(typeof(EndpointElapsedTimeFilter))]
-public class UsersController : BaseController
+public class UsersController : BaseController<UsersController>
 {
-    private readonly ILoggingBroker<UsersController> _loggingBroker;
     private readonly IUserOrchestrationService _userOrchestrationService;
 
-    public UsersController(ILoggingBroker<UsersController> loggingBroker, IUserOrchestrationService userOrchestrationService)
+    public UsersController(IUserOrchestrationService userOrchestrationService)
     {
-        _loggingBroker = loggingBroker ?? throw new ArgumentNullException(nameof(loggingBroker));
         _userOrchestrationService = userOrchestrationService ?? throw new ArgumentNullException(nameof(userOrchestrationService));
     }
 
@@ -182,9 +179,7 @@ public class UsersController : BaseController
                 return NotFound(GetInnerMessage(exception));
             case ValidationException:
                 if (apiBehaviorOptions is null || actionContext is null)
-                {
                     throw new ArgumentNullException(nameof(apiBehaviorOptions));
-                }
 
                 SetModelState(ModelState, (ValidationException)exception);
 
@@ -196,7 +191,7 @@ public class UsersController : BaseController
             case IServiceException:
                 return Problem(StaticData.ControllerMessages.InternalServerError);
             default:
-                _loggingBroker.LogError(exception);
+                LoggingBroker.LogError(exception);
                 return Problem(StaticData.ControllerMessages.InternalServerError);
         }
     }

@@ -1,5 +1,4 @@
-﻿using CourseLibrary.API.Brokers.Loggings;
-using CourseLibrary.API.Contracts.Courses;
+﻿using CourseLibrary.API.Contracts.Courses;
 using CourseLibrary.API.Filters;
 using CourseLibrary.API.Models.Courses;
 using CourseLibrary.API.Models.Exceptions;
@@ -15,14 +14,12 @@ namespace CourseLibrary.API.Controllers.V1;
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/[controller]")]
 [ServiceFilter(typeof(EndpointElapsedTimeFilter))]
-public class CoursesController : BaseController
+public class CoursesController : BaseController<CoursesController>
 {
-    private readonly ILoggingBroker<CoursesController> _loggingBroker;
     private readonly ICourseOrchestrationService _courseOrchestrationService;
 
-    public CoursesController(ILoggingBroker<CoursesController> loggingBroker, ICourseOrchestrationService courseOrchestrationService)
+    public CoursesController(ICourseOrchestrationService courseOrchestrationService)
     {
-        _loggingBroker = loggingBroker ?? throw new ArgumentNullException(nameof(loggingBroker));
         _courseOrchestrationService = courseOrchestrationService ?? throw new ArgumentNullException(nameof(courseOrchestrationService));
     }
 
@@ -202,9 +199,7 @@ public class CoursesController : BaseController
                 return NotFound(GetInnerMessage(exception));
             case ValidationException:
                 if (apiBehaviorOptions is null || actionContext is null)
-                {
                     throw new ArgumentNullException(nameof(apiBehaviorOptions));
-                }
 
                 SetModelState(ModelState, (ValidationException)exception);
 
@@ -216,7 +211,7 @@ public class CoursesController : BaseController
             case IServiceException:
                 return Problem(StaticData.ControllerMessages.InternalServerError);
             default:
-                _loggingBroker.LogError(exception);
+                LoggingBroker.LogError(exception);
                 return Problem(StaticData.ControllerMessages.InternalServerError);
         }
     }

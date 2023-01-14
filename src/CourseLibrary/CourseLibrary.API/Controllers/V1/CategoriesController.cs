@@ -1,6 +1,5 @@
 ﻿using CategoryLibrary.API.Services.V1.Categories;
 using CourseLibrary.API;
-using CourseLibrary.API.Brokers.Loggings;
 using CourseLibrary.API.Contracts.Categories;
 using CourseLibrary.API.Filters;
 using CourseLibrary.API.Models.Categories;
@@ -14,14 +13,12 @@ namespace CategoryLibrary.API.Controllers.V1;
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/[controller]")]
 [ServiceFilter(typeof(EndpointElapsedTimeFilter))]
-public class CategoriesController : BaseController
+public class CategoriesController : BaseController<CategoriesController>
 {
-    private readonly ILoggingBroker<CategoriesController> _loggingBroker;
     private readonly ICategoryOrchestrationService _categoryOrchestrationService;
 
-    public CategoriesController(ILoggingBroker<CategoriesController> loggingBroker, ICategoryOrchestrationService categoryOrchestrationService)
+    public CategoriesController(ICategoryOrchestrationService categoryOrchestrationService)
     {
-        _loggingBroker = loggingBroker ?? throw new ArgumentNullException(nameof(loggingBroker));
         _categoryOrchestrationService = categoryOrchestrationService ?? throw new ArgumentNullException(nameof(categoryOrchestrationService));
     }
 
@@ -121,9 +118,7 @@ public class CategoriesController : BaseController
                 return NotFound(GetInnerMessage(exception));
             case ValidationException:
                 if (apiBehaviorOptions is null || actionContext is null)
-                {
                     throw new ArgumentNullException(nameof(apiBehaviorOptions));
-                }
 
                 SetModelState(ModelState, (ValidationException)exception);
 
@@ -135,7 +130,7 @@ public class CategoriesController : BaseController
             case IServiceException:
                 return Problem(StaticData.ControllerMessages.InternalServerError);
             default:
-                _loggingBroker.LogError(exception);
+                LoggingBroker.LogError(exception);
                 return Problem(StaticData.ControllerMessages.InternalServerError);
         }
     }
