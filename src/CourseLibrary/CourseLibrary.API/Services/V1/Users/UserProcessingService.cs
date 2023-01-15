@@ -49,8 +49,8 @@ internal sealed class UserProcessingService : IUserProcessingService
         }
     }
 
-    public async ValueTask<User> RetrieveUserByIdAsync(Guid userId, CancellationToken cancellationToken) =>
-        await _userFoundationService.RetrieveUserByIdAsync(userId, cancellationToken);
+    public ValueTask<User> RetrieveUserByIdAsync(Guid userId, CancellationToken cancellationToken) =>
+        _userFoundationService.RetrieveUserByIdAsync(userId, cancellationToken);
 
     public IQueryable<User> RetrieveAllUsers() =>
         _userFoundationService.RetrieveAllUsers();

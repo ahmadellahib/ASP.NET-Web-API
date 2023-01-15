@@ -19,8 +19,8 @@ internal sealed class UserOrchestrationService : IUserOrchestrationService
         _servicesExceptionsLogger = servicesExceptionsLogger ?? throw new ArgumentNullException(nameof(servicesExceptionsLogger));
     }
 
-    public async Task<User> CreateUserAsync(User user, CancellationToken cancellationToken) =>
-        await _userProcessingService.CreateUserAsync(user, cancellationToken);
+    public Task<User> CreateUserAsync(User user, CancellationToken cancellationToken) =>
+        _userProcessingService.CreateUserAsync(user, cancellationToken);
 
     public async Task<User> ModifyUserAsync(User user, CancellationToken cancellationToken)
     {
@@ -37,8 +37,8 @@ internal sealed class UserOrchestrationService : IUserOrchestrationService
         }
     }
 
-    public async ValueTask<User> RetrieveUserByIdAsync(Guid userId, CancellationToken cancellationToken) =>
-        await _userProcessingService.RetrieveUserByIdAsync(userId, cancellationToken);
+    public ValueTask<User> RetrieveUserByIdAsync(Guid userId, CancellationToken cancellationToken) =>
+        _userProcessingService.RetrieveUserByIdAsync(userId, cancellationToken);
 
     public IEnumerable<User> RetrieveAllUsers() =>
         _userProcessingService.RetrieveAllUsers();

@@ -77,8 +77,8 @@ internal sealed class CourseFoundationService : ICourseFoundationService
         }
     }
 
-    public async Task RemoveCoursesByAuthorIdAsync(Guid authorId, CancellationToken cancellationToken) =>
-        await _storageBroker.DeleteCoursesByAuthorIdAsync(authorId, cancellationToken);
+    public Task RemoveCoursesByAuthorIdAsync(Guid authorId, CancellationToken cancellationToken) =>
+        _storageBroker.DeleteCoursesByAuthorIdAsync(authorId, cancellationToken);
 
     public async ValueTask<Course> RetrieveCourseByIdAsync(Guid courseId, CancellationToken cancellationToken)
     {

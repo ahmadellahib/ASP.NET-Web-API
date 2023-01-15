@@ -53,14 +53,14 @@ internal sealed class CourseProcessingService : ICourseProcessingService
         }
     }
 
-    public async Task RemoveCourseByIdAsync(Guid courseId, CancellationToken cancellationToken) =>
-       await _courseFoundationService.RemoveCourseByIdAsync(courseId, cancellationToken);
+    public Task RemoveCourseByIdAsync(Guid courseId, CancellationToken cancellationToken) =>
+       _courseFoundationService.RemoveCourseByIdAsync(courseId, cancellationToken);
 
-    public async Task RemoveCoursesByAuthorIdAsync(Guid authorId, CancellationToken cancellationToken) =>
-        await _courseFoundationService.RemoveCoursesByAuthorIdAsync(authorId, cancellationToken);
+    public Task RemoveCoursesByAuthorIdAsync(Guid authorId, CancellationToken cancellationToken) =>
+        _courseFoundationService.RemoveCoursesByAuthorIdAsync(authorId, cancellationToken);
 
-    public async ValueTask<Course> RetrieveCourseByIdAsync(Guid courseId, CancellationToken cancellationToken) =>
-        await _courseFoundationService.RetrieveCourseByIdAsync(courseId, cancellationToken);
+    public ValueTask<Course> RetrieveCourseByIdAsync(Guid courseId, CancellationToken cancellationToken) =>
+        _courseFoundationService.RetrieveCourseByIdAsync(courseId, cancellationToken);
 
     public IQueryable<Course> RetrieveAllCourses() =>
         _courseFoundationService.RetrieveAllCourses();

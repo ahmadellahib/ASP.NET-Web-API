@@ -49,11 +49,11 @@ internal sealed class AuthorProcessingService : IAuthorProcessingService
         }
     }
 
-    public async Task RemoveAuthorByIdAsync(Guid authorId, CancellationToken cancellationToken) =>
-       await _authorFoundationService.RemoveAuthorByIdAsync(authorId, cancellationToken);
+    public Task RemoveAuthorByIdAsync(Guid authorId, CancellationToken cancellationToken) =>
+       _authorFoundationService.RemoveAuthorByIdAsync(authorId, cancellationToken);
 
-    public async ValueTask<Author> RetrieveAuthorByIdAsync(Guid authorId, CancellationToken cancellationToken) =>
-      await _authorFoundationService.RetrieveAuthorByIdAsync(authorId, cancellationToken);
+    public ValueTask<Author> RetrieveAuthorByIdAsync(Guid authorId, CancellationToken cancellationToken) =>
+      _authorFoundationService.RetrieveAuthorByIdAsync(authorId, cancellationToken);
 
     public IQueryable<Author> RetrieveAllAuthors() =>
         _authorFoundationService.RetrieveAllAuthors();

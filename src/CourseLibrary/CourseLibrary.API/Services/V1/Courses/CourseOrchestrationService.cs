@@ -19,8 +19,8 @@ internal sealed class CourseOrchestrationService : ICourseOrchestrationService
         _servicesExceptionsLogger = servicesExceptionsLogger ?? throw new ArgumentNullException(nameof(servicesExceptionsLogger));
     }
 
-    public async Task<Course> CreateCourseAsync(Course course, CancellationToken cancellationToken) =>
-        await _courseProcessingService.CreateCourseAsync(course, cancellationToken);
+    public Task<Course> CreateCourseAsync(Course course, CancellationToken cancellationToken) =>
+        _courseProcessingService.CreateCourseAsync(course, cancellationToken);
 
     public async Task<Course> ModifyCourseAsync(Course course, CancellationToken cancellationToken)
     {
@@ -40,14 +40,14 @@ internal sealed class CourseOrchestrationService : ICourseOrchestrationService
         }
     }
 
-    public async Task RemoveCourseByIdAsync(Guid courseId, CancellationToken cancellationToken) =>
-        await _courseProcessingService.RemoveCourseByIdAsync(courseId, cancellationToken);
+    public Task RemoveCourseByIdAsync(Guid courseId, CancellationToken cancellationToken) =>
+        _courseProcessingService.RemoveCourseByIdAsync(courseId, cancellationToken);
 
-    public async Task RemoveCoursesByAuthorIdAsync(Guid authorId, CancellationToken cancellationToken) =>
-        await _courseProcessingService.RemoveCoursesByAuthorIdAsync(authorId, cancellationToken);
+    public Task RemoveCoursesByAuthorIdAsync(Guid authorId, CancellationToken cancellationToken) =>
+        _courseProcessingService.RemoveCoursesByAuthorIdAsync(authorId, cancellationToken);
 
-    public async ValueTask<Course> RetrieveCourseByIdAsync(Guid courseId, CancellationToken cancellationToken) =>
-        await _courseProcessingService.RetrieveCourseByIdAsync(courseId, cancellationToken);
+    public ValueTask<Course> RetrieveCourseByIdAsync(Guid courseId, CancellationToken cancellationToken) =>
+        _courseProcessingService.RetrieveCourseByIdAsync(courseId, cancellationToken);
 
     public IEnumerable<Course> RetrieveAllCourses() =>
         _courseProcessingService.RetrieveAllCourses();
