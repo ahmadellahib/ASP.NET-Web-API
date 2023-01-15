@@ -64,18 +64,20 @@ public class AuthorsController : BaseController<AuthorsController>
         }
     }
 
-    [HttpPut()]
+    [HttpPatch("{authorId}")]
     [ProducesResponseType(typeof(AuthorUpdatedDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(string), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> PutAuthorAsync([FromBody] AuthorForUpdate authorForUpdate, [FromServices] IOptions<ApiBehaviorOptions> apiBehaviorOptions, CancellationToken cancellationToken)
+    public async Task<IActionResult> PatchAuthorAsync([FromRoute] Guid authorId, [FromBody] AuthorForUpdate authorForUpdate, [FromServices] IOptions<ApiBehaviorOptions> apiBehaviorOptions, CancellationToken cancellationToken)
     {
         try
         {
-            Author storageAuthor = await _authorOrchestrationService.ModifyAuthorAsync((Author)authorForUpdate, cancellationToken);
+            Author author = (Author)authorForUpdate;
+            author.Id = authorId;
+            Author storageAuthor = await _authorOrchestrationService.ModifyAuthorAsync(author, cancellationToken);
 
             return Ok((AuthorUpdatedDto)storageAuthor);
         }

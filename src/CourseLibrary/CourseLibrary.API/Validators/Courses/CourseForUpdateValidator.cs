@@ -7,10 +7,6 @@ public sealed class CourseForUpdateValidator : AbstractValidator<CourseForUpdate
 {
     public CourseForUpdateValidator()
     {
-        RuleFor(x => x.Id)
-            .NotEmpty()
-            .WithMessage(StaticData.ValidationMessages.CannotBeEmpty);
-
         RuleFor(x => x.AuthorId)
             .NotEmpty()
             .WithMessage(StaticData.ValidationMessages.CannotBeEmpty);

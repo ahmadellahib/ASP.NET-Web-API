@@ -7,10 +7,6 @@ public sealed class UserForUpdateValidator : AbstractValidator<UserForUpdate>
 {
     public UserForUpdateValidator()
     {
-        RuleFor(x => x.Id)
-            .NotEmpty()
-            .WithMessage(StaticData.ValidationMessages.CannotBeEmpty);
-
         RuleFor(x => x.FirstName)
             .NotEmpty()
             .WithMessage(StaticData.ValidationMessages.CannotBeEmpty);

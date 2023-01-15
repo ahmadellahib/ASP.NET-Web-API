@@ -63,18 +63,20 @@ public class CategoriesController : BaseController<CategoriesController>
         }
     }
 
-    [HttpPut()]
+    [HttpPatch("{categoryId}")]
     [ProducesResponseType(typeof(CategoryDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(string), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> PutCategoryAsync([FromBody] CategoryForUpdate categoryForUpdate, [FromServices] IOptions<ApiBehaviorOptions> apiBehaviorOptions, CancellationToken cancellationToken)
+    public async Task<IActionResult> PatchCategoryAsync([FromRoute] Guid categoryId, [FromBody] CategoryForUpdate categoryForUpdate, [FromServices] IOptions<ApiBehaviorOptions> apiBehaviorOptions, CancellationToken cancellationToken)
     {
         try
         {
-            Category storageCategory = await _categoryOrchestrationService.ModifyCategoryAsync((Category)categoryForUpdate, cancellationToken);
+            Category category = (Category)categoryForUpdate;
+            category.Id = categoryId;
+            Category storageCategory = await _categoryOrchestrationService.ModifyCategoryAsync(category, cancellationToken);
 
             return Ok((CategoryDto)storageCategory);
         }

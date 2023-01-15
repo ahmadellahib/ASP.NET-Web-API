@@ -64,18 +64,20 @@ public class CoursesController : BaseController<CoursesController>
         }
     }
 
-    [HttpPut()]
+    [HttpPatch("{courseId}")]
     [ProducesResponseType(typeof(CourseUpdatedDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(string), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> PutCourseAsync([FromBody] CourseForUpdate courseForUpdate, [FromServices] IOptions<ApiBehaviorOptions> apiBehaviorOptions, CancellationToken cancellationToken)
+    public async Task<IActionResult> PatchCourseAsync([FromRoute] Guid courseId, [FromBody] CourseForUpdate courseForUpdate, [FromServices] IOptions<ApiBehaviorOptions> apiBehaviorOptions, CancellationToken cancellationToken)
     {
         try
         {
-            Course storageCourse = await _courseOrchestrationService.ModifyCourseAsync((Course)courseForUpdate, cancellationToken);
+            Course course = (Course)courseForUpdate;
+            course.Id = courseId;
+            Course storageCourse = await _courseOrchestrationService.ModifyCourseAsync(course, cancellationToken);
 
             return Ok((CourseUpdatedDto)storageCourse);
         }

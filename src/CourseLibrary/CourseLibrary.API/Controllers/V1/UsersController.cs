@@ -64,18 +64,20 @@ public class UsersController : BaseController<UsersController>
         }
     }
 
-    [HttpPut()]
+    [HttpPatch("{userId}")]
     [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(string), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> PutUserAsync([FromBody] UserForUpdate userForUpdate, [FromServices] IOptions<ApiBehaviorOptions> apiBehaviorOptions, CancellationToken cancellationToken)
+    public async Task<IActionResult> PatchUserAsync([FromRoute] Guid userId, [FromBody] UserForUpdate userForUpdate, [FromServices] IOptions<ApiBehaviorOptions> apiBehaviorOptions, CancellationToken cancellationToken)
     {
         try
         {
-            User storageUser = await _userOrchestrationService.ModifyUserAsync((User)userForUpdate, cancellationToken);
+            User user = (User)userForUpdate;
+            user.Id = userId;
+            User storageUser = await _userOrchestrationService.ModifyUserAsync(user, cancellationToken);
 
             return Ok((UserDto)storageUser);
         }

@@ -7,10 +7,6 @@ public sealed class CategoryForUpdateValidator : AbstractValidator<CategoryForUp
 {
     public CategoryForUpdateValidator()
     {
-        RuleFor(x => x.Id)
-           .NotEmpty()
-           .WithMessage(StaticData.ValidationMessages.CannotBeEmpty);
-
         RuleFor(x => x.Name)
             .NotEmpty()
             .WithMessage(StaticData.ValidationMessages.CannotBeEmpty);

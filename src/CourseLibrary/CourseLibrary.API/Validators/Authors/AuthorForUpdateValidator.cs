@@ -7,10 +7,6 @@ public sealed class AuthorForUpdateValidator : AbstractValidator<AuthorForUpdate
 {
     public AuthorForUpdateValidator()
     {
-        RuleFor(x => x.Id)
-           .NotEmpty()
-           .WithMessage(StaticData.ValidationMessages.CannotBeEmpty);
-
         RuleFor(x => x.MainCategoryId)
             .NotEmpty()
             .WithMessage(StaticData.ValidationMessages.CannotBeEmpty);
