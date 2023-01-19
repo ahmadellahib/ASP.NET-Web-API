@@ -2,7 +2,7 @@
 
 namespace CourseLibrary.Tests.Unit.Services;
 
-internal class BaseServiceTest
+public class BaseServiceTest
 {
     private static readonly Random _random = new();
 

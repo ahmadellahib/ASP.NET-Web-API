@@ -7,10 +7,10 @@ using NSubstitute;
 
 namespace CourseLibrary.Tests.Unit.Services.Foundations.Courses;
 
-internal partial class CourseTests : BaseServiceTest
+public partial class CourseTests : BaseServiceTest
 {
     private readonly CourseFoundationService _sut;
-    //private readonly CancellationToken cts = new CancellationTokenSource().Token;
+    private readonly CancellationToken cts = new CancellationTokenSource().Token;
     private readonly IStorageBroker _storageBroker = Substitute.For<IStorageBroker>();
     private readonly ILoggingBroker<CourseFoundationService> _loggingBroker = Substitute.For<ILoggingBroker<CourseFoundationService>>();
     private readonly IServicesLogicValidator _servicesLogicValidator = Substitute.For<IServicesLogicValidator>();
