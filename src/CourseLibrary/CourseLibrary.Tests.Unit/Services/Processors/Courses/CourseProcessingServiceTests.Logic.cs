@@ -4,7 +4,7 @@ using Force.DeepCloner;
 using NSubstitute;
 using Xunit;
 
-namespace CourseLibrary.Tests.Unit.Services.Processors;
+namespace CourseLibrary.Tests.Unit.Services.Processors.Courses;
 
 public partial class CourseProcessingServiceTests
 {

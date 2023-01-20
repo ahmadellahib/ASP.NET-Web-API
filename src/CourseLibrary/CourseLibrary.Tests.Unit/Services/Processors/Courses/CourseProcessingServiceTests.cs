@@ -4,7 +4,7 @@ using CourseLibrary.API.Services.V1.Courses;
 using CourseLibrary.API.Services.V1.PropertyMappings;
 using NSubstitute;
 
-namespace CourseLibrary.Tests.Unit.Services.Processors;
+namespace CourseLibrary.Tests.Unit.Services.Processors.Courses;
 
 public partial class CourseProcessingServiceTests : BaseServiceTest
 {
