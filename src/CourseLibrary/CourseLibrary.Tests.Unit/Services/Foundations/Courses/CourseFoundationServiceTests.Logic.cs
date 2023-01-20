@@ -8,7 +8,7 @@ using Xunit;
 
 namespace CourseLibrary.Tests.Unit.Services.Foundations.Courses;
 
-public partial class CourseTests
+public partial class CourseFoundationServiceTests
 {
     [Fact]
     public async Task CreateCourseAsync_ShouldCreateCourse_WhenDetailsValid()

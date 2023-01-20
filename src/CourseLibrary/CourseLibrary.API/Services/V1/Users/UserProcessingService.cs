@@ -64,7 +64,7 @@ internal sealed class UserProcessingService : IUserProcessingService
                 throw new ResourceParametersException($"Order by '{userResourceParameters.OrderBy}' is not valid property for User.");
             }
 
-            IQueryable<User> collection = RetrieveAllUsers();
+            IQueryable<User> collection = _userFoundationService.RetrieveAllUsers();
 
             if (!string.IsNullOrEmpty(userResourceParameters.SearchQuery))
             {

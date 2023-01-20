@@ -67,7 +67,7 @@ internal sealed class AuthorProcessingService : IAuthorProcessingService
                 throw new ResourceParametersException($"Order by '{authorResourceParameters.OrderBy}' is not valid property for Author.");
             }
 
-            IQueryable<Author> collection = RetrieveAllAuthors();
+            IQueryable<Author> collection = _authorFoundationService.RetrieveAllAuthors();
 
             if (!string.IsNullOrWhiteSpace(authorResourceParameters.OrderBy))
             {

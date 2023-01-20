@@ -74,7 +74,7 @@ internal sealed class CourseProcessingService : ICourseProcessingService
                 throw new ResourceParametersException($"Order by '{courseResourceParameters.OrderBy}' is not valid property for Course.");
             }
 
-            IQueryable<Course> collection = RetrieveAllCourses();
+            IQueryable<Course> collection = _courseFoundationService.RetrieveAllCourses();
 
             if (!string.IsNullOrEmpty(courseResourceParameters.SearchQuery))
             {
