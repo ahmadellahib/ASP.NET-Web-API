@@ -14,16 +14,17 @@ public partial class CourseProcessingServiceTests
         // Arrange
         DateTimeOffset dateTimeOffset = GetRandomDateTime();
         Course inputCourse = CreateRandomCourse(dateTimeOffset);
-        Course storageCourse = inputCourse.DeepClone();
+        Course createdCourse = CreateRandomCourse(dateTimeOffset);
+        Course expectedCourse = createdCourse.DeepClone();
 
         _courseFoundationService.CreateCourseAsync(inputCourse, cts)
-            .Returns(storageCourse);
+            .Returns(createdCourse);
 
         // Act
         Course actualCourse = await _sut.CreateCourseAsync(inputCourse, cts);
 
         // Assert
-        actualCourse.Should().BeEquivalentTo(storageCourse);
+        actualCourse.Should().BeEquivalentTo(expectedCourse);
     }
 
     [Fact]
@@ -32,15 +33,17 @@ public partial class CourseProcessingServiceTests
         // Arrange
         DateTimeOffset dateTimeOffset = GetRandomDateTime();
         Course inputCourse = CreateRandomCourse(dateTimeOffset);
-        Course storageCourse = inputCourse.DeepClone();
+        Course modifiedCourse = CreateRandomCourse(dateTimeOffset);
+        Course expectedCourse = modifiedCourse.DeepClone();
 
         _courseFoundationService.ModifyCourseAsync(inputCourse, cts)
-            .Returns(storageCourse);
+            .Returns(modifiedCourse);
+
         // Act
         Course actualCourse = await _sut.ModifyCourseAsync(inputCourse, cts);
 
         // Assert
-        actualCourse.Should().BeEquivalentTo(storageCourse);
+        actualCourse.Should().BeEquivalentTo(expectedCourse);
     }
 
     [Fact]
@@ -75,6 +78,7 @@ public partial class CourseProcessingServiceTests
         // Arrange
         DateTimeOffset dateTimeOffset = GetRandomDateTime();
         Course storageCourse = CreateRandomCourse(dateTimeOffset);
+        Course expectedCourse = storageCourse.DeepClone();
         Guid inputCourseId = storageCourse.Id;
 
         _courseFoundationService.RetrieveCourseByIdAsync(inputCourseId, cts)
@@ -84,7 +88,7 @@ public partial class CourseProcessingServiceTests
         Course actualCourse = await _sut.RetrieveCourseByIdAsync(inputCourseId, cts);
 
         // Assert
-        actualCourse.Should().BeEquivalentTo(storageCourse);
+        actualCourse.Should().BeEquivalentTo(expectedCourse);
     }
 
     [Fact]
@@ -92,6 +96,7 @@ public partial class CourseProcessingServiceTests
     {
         // Arrange
         IQueryable<Course> storageCourses = CreateRandomCourses();
+        IQueryable<Course> expectedCourses = storageCourses.DeepClone();
 
         _courseFoundationService.RetrieveAllCourses()
             .Returns(storageCourses);
@@ -100,7 +105,7 @@ public partial class CourseProcessingServiceTests
         IQueryable<Course> actualCourses = _sut.RetrieveAllCourses();
 
         // Assert
-        actualCourses.Should().BeEquivalentTo(storageCourses);
+        actualCourses.Should().BeEquivalentTo(expectedCourses);
     }
 
     [Fact]
@@ -123,6 +128,7 @@ public partial class CourseProcessingServiceTests
         // Arrange
         CourseResourceParameters courseResourceParameters = new() { OrderBy = "" };
         IQueryable<Course> storageCourses = CreateRandomCourses();
+        IQueryable<Course> expectedCourses = storageCourses.DeepClone();
 
         _propertyMappingService.ValidMappingExistsFor<Course, Course>(courseResourceParameters.OrderBy)
             .Returns(true);
@@ -134,7 +140,7 @@ public partial class CourseProcessingServiceTests
         IQueryable<Course> actualCourses = _sut.SearchCourses(courseResourceParameters);
 
         // Assert
-        actualCourses.Should().BeEquivalentTo(storageCourses);
+        actualCourses.Should().BeEquivalentTo(expectedCourses);
     }
 
     [Fact]

@@ -17,16 +17,17 @@ public partial class CourseFoundationServiceTests
         DateTimeOffset dateTimeOffset = GetRandomDateTime();
 
         Course inputCourse = CreateRandomCourse(dateTimeOffset);
-        Course storageCourse = inputCourse.DeepClone();
+        Course createdCourse = CreateRandomCourse(dateTimeOffset);
+        Course expectedCourse = createdCourse.DeepClone();
 
         _storageBroker.InsertCourseAsync(inputCourse, cts)
-            .Returns(storageCourse);
+            .Returns(createdCourse);
 
         // Act
         Course actualCourse = await _sut.CreateCourseAsync(inputCourse, cts);
 
         // Assert
-        actualCourse.Should().BeEquivalentTo(storageCourse);
+        actualCourse.Should().BeEquivalentTo(expectedCourse);
         _servicesLogicValidator.Received(1).ValidateEntity(inputCourse, Arg.Any<CourseValidator>());
         await _storageBroker.Received(1).InsertCourseAsync(inputCourse, cts);
 
@@ -43,16 +44,17 @@ public partial class CourseFoundationServiceTests
         // Arrange
         DateTimeOffset dateTimeOffset = GetRandomDateTime();
         Course inputCourse = CreateRandomCourse(dateTimeOffset);
-        Course storageCourse = inputCourse.DeepClone();
+        Course updatedCourse = CreateRandomCourse(dateTimeOffset);
+        Course expectedCourse = updatedCourse.DeepClone();
 
         _storageBroker.UpdateCourseAsync(inputCourse, cts)
-            .Returns(storageCourse);
+            .Returns(updatedCourse);
 
         // Act
         Course actualCourse = await _sut.ModifyCourseAsync(inputCourse, cts);
 
         // Assert
-        actualCourse.Should().BeEquivalentTo(storageCourse);
+        actualCourse.Should().BeEquivalentTo(expectedCourse);
         _servicesLogicValidator.Received(1).ValidateEntity(inputCourse, Arg.Any<CourseValidator>());
         await _storageBroker.Received(1).UpdateCourseAsync(inputCourse, cts);
 
@@ -114,6 +116,7 @@ public partial class CourseFoundationServiceTests
         // Arrange
         DateTimeOffset dateTimeOffset = GetRandomDateTime();
         Course storageCourse = CreateRandomCourse(dateTimeOffset);
+        Course expectedCourse = storageCourse.DeepClone();
         Guid inputCourseId = storageCourse.Id;
 
         _storageBroker.SelectCourseByIdAsync(inputCourseId, cts)
@@ -123,7 +126,7 @@ public partial class CourseFoundationServiceTests
         Course actualCourse = await _sut.RetrieveCourseByIdAsync(inputCourseId, cts);
 
         // Assert
-        actualCourse.Should().BeEquivalentTo(storageCourse);
+        actualCourse.Should().BeEquivalentTo(expectedCourse);
         _servicesLogicValidator.Received(1).ValidateParameter(inputCourseId, "courseId");
         await _storageBroker.Received(1).SelectCourseByIdAsync(inputCourseId, cts);
         _servicesLogicValidator.Received(1).ValidateStorageEntity<Course>(storageCourse, inputCourseId);
@@ -141,6 +144,7 @@ public partial class CourseFoundationServiceTests
     {
         // Arrange
         IQueryable<Course> storageCourses = CreateRandomCourses();
+        IQueryable<Course> expectedCourses = storageCourses.DeepClone();
 
         _storageBroker.SelectAllCourses()
                 .Returns(storageCourses);
@@ -149,7 +153,7 @@ public partial class CourseFoundationServiceTests
         IQueryable<Course> actualCourses = _sut.RetrieveAllCourses();
 
         // Assert
-        actualCourses.Should().BeEquivalentTo(storageCourses);
+        actualCourses.Should().BeEquivalentTo(expectedCourses);
         _storageBroker.Received(1).SelectAllCourses();
         _loggingBroker.DidNotReceive().LogWarning(StaticData.WarningMessages.NoEntitiesFoundInStorage);
     }
