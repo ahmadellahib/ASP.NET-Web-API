@@ -5,7 +5,9 @@ VisualStudioVersion = 17.4.33110.190
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CourseLibrary.API", "CourseLibrary.API\CourseLibrary.API.csproj", "{62425023-E8B3-47F9-80E2-57A93DC0B02C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CourseLibrary.Tests.Unit", "CourseLibrary.Tests.Unit\CourseLibrary.Tests.Unit.csproj", "{F24EB565-E9D4-45ED-8325-3F067688B5A4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CourseLibrary.Tests.Unit", "CourseLibrary.Tests.Unit\CourseLibrary.Tests.Unit.csproj", "{F24EB565-E9D4-45ED-8325-3F067688B5A4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CourseLibrary.Tests.Integration", "CourseLibrary.Tests.Integration\CourseLibrary.Tests.Integration.csproj", "{EB9CF380-F587-43E0-A928-2DAC227640B2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{F24EB565-E9D4-45ED-8325-3F067688B5A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F24EB565-E9D4-45ED-8325-3F067688B5A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F24EB565-E9D4-45ED-8325-3F067688B5A4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EB9CF380-F587-43E0-A928-2DAC227640B2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EB9CF380-F587-43E0-A928-2DAC227640B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EB9CF380-F587-43E0-A928-2DAC227640B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EB9CF380-F587-43E0-A928-2DAC227640B2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

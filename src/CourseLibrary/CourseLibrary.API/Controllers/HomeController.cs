@@ -3,13 +3,12 @@
 namespace CourseLibrary.API.Controllers;
 
 [ApiController]
-[ApiVersion("1.0")]
-[Route("api/v{version:apiVersion}/[controller]")]
+[Route("api/[controller]")]
 public class HomeController : ControllerBase
 {
     [HttpGet]
     public IActionResult Get()
     {
-        return Ok("Api is running.. ");
+        return Ok("Welcome to Course Library API");
     }
 }
