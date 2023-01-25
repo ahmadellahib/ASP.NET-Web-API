@@ -25,15 +25,15 @@ internal sealed partial class StorageBroker : DbContext, IStorageBroker
     {
         bool useSqlServer = _configuration.GetValue<bool>("UseSqlServer");
 
-        string? connectionString = _configuration.GetConnectionString(name: "DefaultConnection");
-
-        if (string.IsNullOrEmpty(connectionString))
-        {
-            throw new Exception("DefaultConnection is missing app configurations.");
-        }
-
         if (useSqlServer)
         {
+            string? connectionString = _configuration.GetConnectionString(name: "DefaultConnection");
+
+            if (string.IsNullOrEmpty(connectionString))
+            {
+                throw new Exception("DefaultConnection is missing app configurations.");
+            }
+
             optionsBuilder.UseSqlServer(connectionString,
                 providerOptions =>
                 {
