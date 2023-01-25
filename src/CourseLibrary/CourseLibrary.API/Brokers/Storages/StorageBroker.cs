@@ -23,6 +23,8 @@ internal sealed partial class StorageBroker : DbContext, IStorageBroker
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
+        bool useSqlServer = _configuration.GetValue<bool>("UseSqlServer");
+
         string? connectionString = _configuration.GetConnectionString(name: "DefaultConnection");
 
         if (string.IsNullOrEmpty(connectionString))
@@ -30,12 +32,20 @@ internal sealed partial class StorageBroker : DbContext, IStorageBroker
             throw new Exception("DefaultConnection is missing app configurations.");
         }
 
-        optionsBuilder.UseSqlServer(connectionString,
-            providerOptions =>
-            {
-                providerOptions.EnableRetryOnFailure();
-            })
-            .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+        if (useSqlServer)
+        {
+            optionsBuilder.UseSqlServer(connectionString,
+                providerOptions =>
+                {
+                    providerOptions.EnableRetryOnFailure();
+                })
+                .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+        }
+        else
+        {
+            optionsBuilder.UseInMemoryDatabase("CourseLibraryDb")
+                .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+        }
 
         if (_env.IsDevelopment())
         {

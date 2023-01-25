@@ -38,7 +38,7 @@ public partial class UsersControllerTests
         HttpResponseMessage responseMessage = await _httpClient.PatchAsJsonAsync(UsersRelativeUrl + "/" + randomUser.Id, userForUpdate);
         string responseContent = await responseMessage.Content.ReadAsStringAsync();
         UserDto expectedUser = JsonConvert.DeserializeObject<UserDto>(responseContent);
-        UserDto actualUser = await GetUserByIdAsync(expectedUser.Id);
+        UserDto actualUser = await GetUserByIdAsync(randomUser.Id);
 
         // Assert
         responseMessage.StatusCode.Should().Be(HttpStatusCode.OK);

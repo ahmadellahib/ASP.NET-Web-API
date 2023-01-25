@@ -30,7 +30,7 @@ internal static class StartupHelperExtensions
     {
         builder.Services.RegisterDependencies()
             .AddMemoryCache()
-            .RegisterDbContext()
+            .RegisterDbContext(builder.Configuration)
             .RegisterApiVersioning()
             .AddEndpointsApiExplorer()
             .RegisterSwagger()
@@ -221,8 +221,13 @@ internal static class StartupHelperExtensions
         return services;
     }
 
-    private static IServiceCollection RegisterDbContext(this IServiceCollection services)
+    private static IServiceCollection RegisterDbContext(this IServiceCollection services, IConfiguration configuration)
     {
+        bool useSqlServer = configuration.GetValue<bool>("UseSqlServer");
+
+        if (!useSqlServer)
+            services.AddEntityFrameworkInMemoryDatabase();
+
         services.AddDbContext<StorageBroker>();
 
         return services;

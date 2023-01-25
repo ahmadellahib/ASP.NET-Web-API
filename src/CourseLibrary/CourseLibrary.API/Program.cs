@@ -7,6 +7,11 @@ WebApplication app = builder
     .ConfigureServices()
     .ConfigurePipeline();
 
-await app.ResetDatabaseAsync();
+bool useSqlServer = builder.Configuration.GetValue<bool>("UseSqlServer");
+
+if (useSqlServer)
+{
+    await app.ResetDatabaseAsync();
+}
 
 app.Run();
