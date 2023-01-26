@@ -105,7 +105,7 @@ public partial class UsersControllerTests
     }
 
     [Fact]
-    public async Task DELETE_ShouldDeleteUserAsync()
+    public async Task DELETE_ShouldReturnMethodNotAllowedAsync()
     {
         // Arrange
         Guid randomUserId = Guid.NewGuid();
