@@ -9,6 +9,7 @@ using CourseLibrary.API.Models.Authors;
 using CourseLibrary.API.Models.Categories;
 using CourseLibrary.API.Models.Courses;
 using CourseLibrary.API.Models.Enums;
+using CourseLibrary.API.Models.Options;
 using CourseLibrary.API.Models.Users;
 using CourseLibrary.API.Services;
 using CourseLibrary.API.Services.V1.Authors;
@@ -28,7 +29,8 @@ internal static class StartupHelperExtensions
 {
     public static WebApplication ConfigureServices(this WebApplicationBuilder builder)
     {
-        builder.Services.RegisterDependencies()
+        builder.Services.ConfigureMyConfigSection(builder.Configuration)
+            .RegisterDependencies()
             .AddMemoryCache()
             .RegisterDbContext(builder.Configuration)
             .RegisterApiVersioning()
@@ -194,6 +196,14 @@ internal static class StartupHelperExtensions
         }
     }
 
+    private static IServiceCollection ConfigureMyConfigSection(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.Configure<MyConfigOptions>(
+              configuration.GetSection(MyConfigOptions.SectionName));
+
+        return services;
+    }
+
     private static IServiceCollection RegisterDependencies(this IServiceCollection services)
     {
         services.AddSingleton<ICacheBroker, CacheBroker>();
@@ -223,7 +233,7 @@ internal static class StartupHelperExtensions
 
     private static IServiceCollection RegisterDbContext(this IServiceCollection services, IConfiguration configuration)
     {
-        bool useSqlServer = configuration.GetValue<bool>("UseSqlServer");
+        bool useSqlServer = configuration.GetValue<bool>("MyConfig:UseSqlServer");
 
         if (!useSqlServer)
             services.AddEntityFrameworkInMemoryDatabase();

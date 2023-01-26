@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using CourseLibrary.API.Models.Options;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using System.Reflection;
 
 namespace CourseLibrary.API.Brokers.Storages;
@@ -7,9 +9,11 @@ internal sealed partial class StorageBroker : DbContext, IStorageBroker
 {
     private readonly IWebHostEnvironment _env;
     private readonly IConfiguration _configuration;
+    private readonly MyConfigOptions _myConfigOptions;
 
-    public StorageBroker(IWebHostEnvironment env, IConfiguration configuration)
+    public StorageBroker(IWebHostEnvironment env, IConfiguration configuration, IOptions<MyConfigOptions> myConfigOptions)
     {
+        _myConfigOptions = myConfigOptions.Value;
         _env = env ?? throw new ArgumentNullException(nameof(env));
         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
     }
@@ -23,9 +27,7 @@ internal sealed partial class StorageBroker : DbContext, IStorageBroker
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        bool useSqlServer = _configuration.GetValue<bool>("UseSqlServer");
-
-        if (useSqlServer)
+        if (_myConfigOptions.UseSqlServer)
         {
             string? connectionString = _configuration.GetConnectionString(name: "DefaultConnection");
 

@@ -7,7 +7,7 @@ WebApplication app = builder
     .ConfigureServices()
     .ConfigurePipeline();
 
-bool useSqlServer = builder.Configuration.GetValue<bool>("UseSqlServer");
+bool useSqlServer = builder.Configuration.GetValue<bool>("MyConfig:UseSqlServer");
 
 if (useSqlServer)
 {

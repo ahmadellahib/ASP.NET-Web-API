@@ -42,6 +42,19 @@ public partial class UsersControllerTests : IntegrationTest
         return JsonConvert.DeserializeObject<UserDto>(responseContent);
     }
 
+    private async Task<List<UserDto>> CreateRandomPostedUsersAsync()
+    {
+        int randomNumber = GetRandomNumber(2, 10);
+        List<UserDto> randomPosts = new();
+
+        for (int i = 0; i < randomNumber; i++)
+        {
+            randomPosts.Add(await PostRandomUserAsync());
+        }
+
+        return randomPosts;
+    }
+
     private async Task<UserDto> GetUserByIdAsync(Guid userId) =>
         await _httpClient.GetFromJsonAsync<UserDto>(UsersRelativeUrl + "/" + userId);
 

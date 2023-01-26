@@ -8,8 +8,9 @@ namespace CourseLibrary.Tests.Integration.Controllers.Users;
 
 public partial class UsersControllerTests
 {
+
     [Fact]
-    public async Task ShouldCreateUserAsync()
+    public async Task POST_ShouldCreateUserAsync()
     {
         // Arrange
         UserForCreation userForCreation = CreateRandomUserForCreation();
@@ -28,7 +29,7 @@ public partial class UsersControllerTests
     }
 
     [Fact]
-    public async Task ShouldPatchUserAsync()
+    public async Task PATCH_ShouldUpdateUserAsync()
     {
         // Arrange
         UserDto randomUser = await PostRandomUserAsync();
@@ -48,7 +49,7 @@ public partial class UsersControllerTests
     }
 
     [Fact]
-    public async Task ShouldGetUserByIdAsync()
+    public async Task GET_ShouldGetUserByIdAsync()
     {
         // Arrange
         UserDto expectedUser = await PostRandomUserAsync();
@@ -63,5 +64,56 @@ public partial class UsersControllerTests
         actualUser.Should().BeEquivalentTo(expectedUser);
 
         await DeleteUserByIdAsync(actualUser.Id);
+    }
+
+    [Fact]
+    public async Task GET_ShouldReturnNotFound_WhenUserNotExistsAsync()
+    {
+        // Arrange
+        Guid randomUserId = Guid.NewGuid();
+
+        // Act
+        HttpResponseMessage responseMessage = await _httpClient.GetAsync(UsersRelativeUrl + "/" + randomUserId);
+        string responseContent = await responseMessage.Content.ReadAsStringAsync();
+
+        // Assert
+        responseMessage.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        responseContent.Should().Be($"The requested resource User with id: {randomUserId} could not be found.");
+    }
+
+    [Fact]
+    public async Task GET_ShouldGetAllUsersAsync()
+    {
+        // Arrange
+        List<UserDto> expectedUsers = await CreateRandomPostedUsersAsync();
+
+        // Act
+        HttpResponseMessage responseMessage = await _httpClient.GetAsync(UsersRelativeUrl);
+
+        // Assert
+        responseMessage.StatusCode.Should().Be(HttpStatusCode.OK);
+        string responseContent = await responseMessage.Content.ReadAsStringAsync();
+        List<UserDto> actualUsers = JsonConvert.DeserializeObject<List<UserDto>>(responseContent);
+
+        foreach (UserDto expectedUser in expectedUsers)
+        {
+            UserDto actualUser = actualUsers.Single(user => user.Id == expectedUser.Id);
+            actualUser.Should().BeEquivalentTo(expectedUser);
+
+            await DeleteUserByIdAsync(actualUser.Id);
+        }
+    }
+
+    [Fact]
+    public async Task DELETE_ShouldDeleteUserAsync()
+    {
+        // Arrange
+        Guid randomUserId = Guid.NewGuid();
+
+        // Act
+        HttpResponseMessage responseMessage = await _httpClient.DeleteAsync(UsersRelativeUrl + "/" + randomUserId);
+
+        // Assert
+        responseMessage.StatusCode.Should().Be(HttpStatusCode.MethodNotAllowed);
     }
 }
