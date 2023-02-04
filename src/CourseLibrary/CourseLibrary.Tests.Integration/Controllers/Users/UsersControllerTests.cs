@@ -5,9 +5,15 @@ using Tynamix.ObjectFiller;
 
 namespace CourseLibrary.Tests.Integration.Controllers.Users;
 
-public partial class UsersControllerTests : IntegrationTest
+public partial class UsersControllerTests : IClassFixture<IntegrationTestFactory>
 {
     public const string UsersRelativeUrl = "api/v1/users";
+    private readonly HttpClient _httpClient;
+
+    public UsersControllerTests(IntegrationTestFactory integrationTestFactory)
+    {
+        _httpClient = integrationTestFactory.CreateClient();
+    }
 
     public UserForCreation CreateRandomUserForCreation()
     {
@@ -60,4 +66,10 @@ public partial class UsersControllerTests : IntegrationTest
 
     private async Task DeleteUserByIdAsync(Guid userId) =>
         await _httpClient.DeleteAsync(UsersRelativeUrl + "/" + userId);
+
+    private DateTimeOffset GetRandomDateTime() =>
+        new DateTimeRange(earliestDate: new DateTime()).GetValue();
+
+    private int GetRandomNumber(int minimum, int maximum) =>
+        new IntRange(minimum, maximum).GetValue();
 }

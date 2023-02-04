@@ -105,7 +105,10 @@ internal static class StartupHelperExtensions
                     await storageBroker.Database.MigrateAsync();
                 }
 
-                await SeedData(storageBroker);
+                if (app.Environment.IsDevelopment())
+                {
+                    await SeedData(storageBroker);
+                }
             }
         }
         catch (Exception ex)

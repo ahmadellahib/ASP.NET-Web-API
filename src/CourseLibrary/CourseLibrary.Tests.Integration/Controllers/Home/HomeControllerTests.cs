@@ -3,9 +3,15 @@ using System.Net;
 
 namespace CourseLibrary.Tests.Integration.Controllers.Home;
 
-public class HomeControllerTests : IntegrationTest
+public class HomeControllerTests : IClassFixture<IntegrationTestFactory>
 {
     private const string HomeRelatativeUrl = "api/home";
+    private readonly HttpClient _httpClient;
+
+    public HomeControllerTests(IntegrationTestFactory integrationTestFactory)
+    {
+        _httpClient = integrationTestFactory.CreateClient();
+    }
 
     [Fact]
     public async Task ShouldGetHomeMessageAsync()
