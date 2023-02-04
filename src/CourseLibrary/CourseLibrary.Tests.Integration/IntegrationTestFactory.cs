@@ -18,7 +18,7 @@ public class IntegrationTestFactory : WebApplicationFactory<IApiMarker>, IAsyncL
     private readonly TestcontainerDatabase _dbContainer = new TestcontainersBuilder<MsSqlTestcontainer>()
             .WithDatabase(new MsSqlTestcontainerConfiguration
             {
-                Password = "p@word123456",
+                Password = "p@ssword123456",
             })
             .WithCleanUp(true)
             .Build();
@@ -49,7 +49,6 @@ public class IntegrationTestFactory : WebApplicationFactory<IApiMarker>, IAsyncL
         ConfigurationBuilder configurationBuilder = new();
         Dictionary<string, string> dic = new()
         {
-            {"MyConfig:UseSqlServer", "true"},
             {"ConnectionStrings:DefaultConnection", connectionString}
         };
 
