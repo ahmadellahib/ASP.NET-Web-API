@@ -19,6 +19,6 @@ jobs:
     - name: Restoring Packages
       run: dotnet restore
     - name: Building Solution
-      run: dotnet build src/CourseLibrary/CourseLibrary.sln --no-restore
+      run: dotnet build ../../src/CourseLibrary/CourseLibrary.sln --no-restore
     - name: Running Tests
-      run: dotnet test src/CourseLibrary/CourseLibrary.Tests.Unit/CourseLibrary.Tests.Unit.csproj --no-build --verbosity normal
+      run: dotnet test ../../src/CourseLibrary/CourseLibrary.Tests.Unit/CourseLibrary.Tests.Unit.csproj --no-build --verbosity normal
