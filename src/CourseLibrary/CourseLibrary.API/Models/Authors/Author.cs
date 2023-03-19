@@ -13,7 +13,7 @@ public class Author : IConcurrencyAware
     public Guid MainCategoryId { get; set; }
     public string ConcurrencyStamp { get; set; } = string.Empty;
 
-    public virtual User User { get; set; } = null!;
-    public virtual Category MainCategory { get; set; } = null!;
-    public virtual IEnumerable<Course>? Courses { get; set; }
+    public User User { get; set; } = null!;
+    public Category MainCategory { get; set; } = null!;
+    public IEnumerable<Course>? Courses { get; set; }
 }

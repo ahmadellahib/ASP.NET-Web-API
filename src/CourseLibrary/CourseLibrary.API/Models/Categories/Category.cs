@@ -14,6 +14,6 @@ public class Category : IConcurrencyAware, IAuditable
     public Guid UpdatedById { get; set; }
     public string ConcurrencyStamp { get; set; } = string.Empty;
 
-    public virtual User CreatedBy { get; set; } = null!;
-    public virtual User UpdatedBy { get; set; } = null!;
+    public User CreatedBy { get; set; } = null!;
+    public User UpdatedBy { get; set; } = null!;
 }

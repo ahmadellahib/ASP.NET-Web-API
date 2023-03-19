@@ -16,8 +16,8 @@ public class User : IConcurrencyAware
     public DateTimeOffset? DateOfDeath { get; set; }
     public string ConcurrencyStamp { get; set; } = string.Empty;
 
-    public virtual IEnumerable<Course>? CreatedCourses { get; set; }
-    public virtual IEnumerable<Course>? UpdatedCourses { get; set; }
-    public virtual IEnumerable<Category>? CreatedCategories { get; set; }
-    public virtual IEnumerable<Category>? UpdatedCategories { get; set; }
+    public IEnumerable<Course>? CreatedCourses { get; set; }
+    public IEnumerable<Course>? UpdatedCourses { get; set; }
+    public IEnumerable<Category>? CreatedCategories { get; set; }
+    public IEnumerable<Category>? UpdatedCategories { get; set; }
 }
