@@ -201,8 +201,10 @@ internal static class StartupHelperExtensions
 
     private static IServiceCollection ConfigureMyConfigSection(this IServiceCollection services, IConfiguration configuration)
     {
-        services.Configure<MyConfigOptions>(
-              configuration.GetSection(MyConfigOptions.SectionName));
+        services.AddOptions<MyConfigOptions>()
+            .Bind(configuration.GetSection(MyConfigOptions.SectionName))
+            .ValidateFluently()
+            .ValidateOnStart();
 
         return services;
     }
@@ -273,7 +275,7 @@ internal static class StartupHelperExtensions
 
     private static IServiceCollection RegisterFluentValidation(this IServiceCollection services)
     {
-        services.AddValidatorsFromAssemblyContaining<Program>()
+        services.AddValidatorsFromAssemblyContaining<Program>(ServiceLifetime.Singleton)
             .AddFluentValidationAutoValidation(options =>
             {
                 options.DisableDataAnnotationsValidation = true;
