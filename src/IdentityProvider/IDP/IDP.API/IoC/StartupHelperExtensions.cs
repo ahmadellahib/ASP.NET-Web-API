@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using IDP.API.Services.Authentication;
+using IDP.API.Services.JWT;
+using Microsoft.AspNetCore.Mvc;
 using Serilog;
 namespace IDP.API.IoC;
 
@@ -8,7 +10,6 @@ internal static class StartupHelperExtensions
     public static WebApplication ConfigureServices(this WebApplicationBuilder builder)
     {
         builder.Services.RegisterDependencies()
-            .AddMemoryCache()
             .RegisterApiVersioning()
             .AddEndpointsApiExplorer()
             .RegisterSwagger();
@@ -51,8 +52,6 @@ internal static class StartupHelperExtensions
 
         app.UseHttpsRedirection();
 
-        app.UseAuthorization();
-
         app.MapControllers();
 
         return app;
@@ -60,6 +59,9 @@ internal static class StartupHelperExtensions
 
     private static IServiceCollection RegisterDependencies(this IServiceCollection services)
     {
+        services.AddTransient<IAuthenticationService, AuthenticationService>();
+        services.AddTransient<IJwtService, JwtService>();
+
         return services;
     }
 
