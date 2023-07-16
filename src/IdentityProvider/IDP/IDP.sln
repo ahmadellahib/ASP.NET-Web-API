@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.33516.290
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IDP.API", "IDP.API\IDP.API.csproj", "{28C77A09-13D8-44AF-94DD-B61873093FAB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{28C77A09-13D8-44AF-94DD-B61873093FAB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{28C77A09-13D8-44AF-94DD-B61873093FAB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{28C77A09-13D8-44AF-94DD-B61873093FAB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{28C77A09-13D8-44AF-94DD-B61873093FAB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8FC872C8-D5E3-4108-9B57-C643E25166C3}
+	EndGlobalSection
+EndGlobal
