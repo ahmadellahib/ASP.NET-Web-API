@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.4.33110.190
@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CourseLibrary.API", "Course
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CourseLibrary.Tests.Unit", "CourseLibrary.Tests.Unit\CourseLibrary.Tests.Unit.csproj", "{F24EB565-E9D4-45ED-8325-3F067688B5A4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CourseLibrary.Tests.Integration", "CourseLibrary.Tests.Integration\CourseLibrary.Tests.Integration.csproj", "{EB9CF380-F587-43E0-A928-2DAC227640B2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CourseLibrary.Tests.Integration", "CourseLibrary.Tests.Integration\CourseLibrary.Tests.Integration.csproj", "{EB9CF380-F587-43E0-A928-2DAC227640B2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
