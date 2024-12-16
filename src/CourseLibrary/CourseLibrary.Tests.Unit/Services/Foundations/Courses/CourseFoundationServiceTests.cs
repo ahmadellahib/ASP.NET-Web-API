@@ -14,14 +14,10 @@ public partial class CourseFoundationServiceTests : BaseServiceTest
     private readonly IStorageBroker _storageBroker = Substitute.For<IStorageBroker>();
     private readonly ILoggingBroker<CourseFoundationService> _loggingBroker = Substitute.For<ILoggingBroker<CourseFoundationService>>();
     private readonly IServicesLogicValidator _servicesLogicValidator = Substitute.For<IServicesLogicValidator>();
-    private readonly IServicesExceptionsLogger<CourseFoundationService> _servicesExceptionsLogger = Substitute.For<IServicesExceptionsLogger<CourseFoundationService>>();
-
+    
     public CourseFoundationServiceTests()
     {
-        _sut = new CourseFoundationService(_storageBroker,
-            _servicesLogicValidator,
-            _loggingBroker,
-            _servicesExceptionsLogger);
+        _sut = new CourseFoundationService(_storageBroker, _servicesLogicValidator, _loggingBroker);
     }
 
     private Course CreateRandomCourse(DateTimeOffset dateTimeOffset) =>

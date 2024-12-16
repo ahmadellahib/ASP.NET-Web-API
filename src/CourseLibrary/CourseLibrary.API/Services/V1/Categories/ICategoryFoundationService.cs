@@ -1,6 +1,6 @@
 ﻿using CourseLibrary.API.Models.Categories;
 
-namespace CategoryLibrary.API.Services.V1.Categories;
+namespace CourseLibrary.API.Services.V1.Categories;
 
 public interface ICategoryFoundationService
 {

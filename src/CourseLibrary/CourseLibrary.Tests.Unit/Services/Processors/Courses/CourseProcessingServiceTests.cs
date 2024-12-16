@@ -1,5 +1,4 @@
 ﻿using CourseLibrary.API.Models.Courses;
-using CourseLibrary.API.Services;
 using CourseLibrary.API.Services.V1.Courses;
 using CourseLibrary.API.Services.V1.PropertyMappings;
 using NSubstitute;
@@ -12,13 +11,10 @@ public partial class CourseProcessingServiceTests : BaseServiceTest
     private readonly CancellationToken cts = new CancellationTokenSource().Token;
     private readonly ICourseFoundationService _courseFoundationService = Substitute.For<ICourseFoundationService>();
     private readonly IPropertyMappingService _propertyMappingService = Substitute.For<IPropertyMappingService>();
-    private readonly IServicesExceptionsLogger<CourseProcessingService> _servicesExceptionsLogger = Substitute.For<IServicesExceptionsLogger<CourseProcessingService>>();
-
+    
     public CourseProcessingServiceTests()
     {
-        _sut = new CourseProcessingService(_courseFoundationService,
-        _propertyMappingService,
-        _servicesExceptionsLogger);
+        _sut = new CourseProcessingService(_courseFoundationService, _propertyMappingService);
     }
 
     private Course CreateRandomCourse(DateTimeOffset dateTimeOffset) =>

@@ -1,6 +1,5 @@
 ﻿using CourseLibrary.API.Contracts.Users;
 using CourseLibrary.API.Filters;
-using CourseLibrary.API.Models.Exceptions;
 using CourseLibrary.API.Models.Users;
 using CourseLibrary.API.Pagination;
 using CourseLibrary.API.Services.V1.Users;
@@ -31,16 +30,9 @@ public class UsersController : BaseController<UsersController>
     [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
     public async ValueTask<IActionResult> GetUserAsync([FromRoute] Guid userId, [FromServices] IOptions<ApiBehaviorOptions> apiBehaviorOptions, CancellationToken cancellationToken)
     {
-        try
-        {
-            User user = await _userOrchestrationService.RetrieveUserByIdAsync(userId, cancellationToken);
+        User user = await _userOrchestrationService.RetrieveUserByIdAsync(userId, cancellationToken);
 
-            return Ok((UserDto)user);
-        }
-        catch (Exception exception)
-        {
-            return HandleException(exception, apiBehaviorOptions, ControllerContext);
-        }
+        return Ok((UserDto)user);
     }
 
     [HttpPost]
@@ -52,16 +44,9 @@ public class UsersController : BaseController<UsersController>
     [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> PostUserAsync([FromBody] UserForCreation userForCreation, [FromServices] IOptions<ApiBehaviorOptions> apiBehaviorOptions, CancellationToken cancellationToken)
     {
-        try
-        {
-            User addedUser = await _userOrchestrationService.CreateUserAsync((User)userForCreation, cancellationToken);
+        User addedUser = await _userOrchestrationService.CreateUserAsync((User)userForCreation, cancellationToken);
 
-            return CreatedAtRoute(nameof(GetUserAsync), new { userId = addedUser.Id }, (UserDto)addedUser);
-        }
-        catch (Exception exception)
-        {
-            return HandleException(exception, apiBehaviorOptions, ControllerContext);
-        }
+        return CreatedAtRoute(nameof(GetUserAsync), new { userId = addedUser.Id }, (UserDto)addedUser);
     }
 
     [HttpPatch("{userId}")]
@@ -73,18 +58,11 @@ public class UsersController : BaseController<UsersController>
     [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> PatchUserAsync([FromRoute] Guid userId, [FromBody] UserForUpdate userForUpdate, [FromServices] IOptions<ApiBehaviorOptions> apiBehaviorOptions, CancellationToken cancellationToken)
     {
-        try
-        {
-            User user = (User)userForUpdate;
-            user.Id = userId;
-            User storageUser = await _userOrchestrationService.ModifyUserAsync(user, cancellationToken);
+        User user = (User)userForUpdate;
+        user.Id = userId;
+        User storageUser = await _userOrchestrationService.ModifyUserAsync(user, cancellationToken);
 
-            return Ok((UserDto)storageUser);
-        }
-        catch (Exception exception)
-        {
-            return HandleException(exception, apiBehaviorOptions, ControllerContext);
-        }
+        return Ok((UserDto)storageUser);
     }
 
     [HttpGet(Name = nameof(SearchUsersAsync))]
@@ -93,37 +71,25 @@ public class UsersController : BaseController<UsersController>
     [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
     public ActionResult<IEnumerable<UserDto>> SearchUsersAsync([FromQuery] UserResourceParameters userResourceParameters)
     {
-        try
+        PagedList<User> storagePagedUsers = _userOrchestrationService.SearchUsers(userResourceParameters);
+
+        PaginationMetaData PaginationMetaData = new()
         {
-            PagedList<User> storagePagedUsers = _userOrchestrationService.SearchUsers(userResourceParameters);
+            TotalCount = storagePagedUsers.TotalCount,
+            PageSize = storagePagedUsers.PageSize,
+            CurrentPage = storagePagedUsers.CurrentPage,
+            TotalPages = storagePagedUsers.TotalPages,
+            HasPrevious = storagePagedUsers.HasPrevious,
+            HasNext = storagePagedUsers.HasNext,
+            PreviousPageLink = storagePagedUsers.HasPrevious ? CreateUserResourceUri(userResourceParameters, ResourceUriType.PreviousPage) : string.Empty,
+            NextPageLink = storagePagedUsers.HasNext ? CreateUserResourceUri(userResourceParameters, ResourceUriType.NextPage) : string.Empty
+        };
 
-            PaginationMetaData PaginationMetaData = new()
-            {
-                TotalCount = storagePagedUsers.TotalCount,
-                PageSize = storagePagedUsers.PageSize,
-                CurrentPage = storagePagedUsers.CurrentPage,
-                TotalPages = storagePagedUsers.TotalPages,
-                HasPrevious = storagePagedUsers.HasPrevious,
-                HasNext = storagePagedUsers.HasNext,
-                PreviousPageLink = storagePagedUsers.HasPrevious ? CreateUserResourceUri(userResourceParameters, ResourceUriType.PreviousPage) : string.Empty,
-                NextPageLink = storagePagedUsers.HasNext ? CreateUserResourceUri(userResourceParameters, ResourceUriType.NextPage) : string.Empty
-            };
+        Response.Headers.Append("X-Pagination", JsonSerializer.Serialize(PaginationMetaData));
 
-            Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(PaginationMetaData));
+        List<UserDto> usersDto = storagePagedUsers.Select(user => (UserDto)user).ToList();
 
-            List<UserDto> usersDtos = new();
-
-            foreach (User user in storagePagedUsers)
-            {
-                usersDtos.Add((UserDto)user);
-            }
-
-            return Ok(usersDtos);
-        }
-        catch (Exception exception)
-        {
-            return (ActionResult)HandleException(exception);
-        }
+        return Ok(usersDto);
     }
 
     private string CreateUserResourceUri(UserResourceParameters userResourceParameters, ResourceUriType type)
@@ -167,34 +133,5 @@ public class UsersController : BaseController<UsersController>
         }
 
         return resourceUri is null ? string.Empty : resourceUri.Replace("http://", "https://");
-    }
-
-    private IActionResult HandleException(Exception exception, IOptions<ApiBehaviorOptions>? apiBehaviorOptions = null, ActionContext? actionContext = null)
-    {
-        switch (exception)
-        {
-            case ResourceParametersException:
-                return BadRequest(exception.Message);
-            case CancellationException:
-                return NoContent();
-            case ValidationException when exception.InnerException is NotFoundEntityException<User>:
-                return NotFound(GetInnerMessage(exception));
-            case ValidationException:
-                if (apiBehaviorOptions is null || actionContext is null)
-                    throw new ArgumentNullException(nameof(apiBehaviorOptions));
-
-                SetModelState(ModelState, (ValidationException)exception);
-
-                return apiBehaviorOptions!.Value.InvalidModelStateResponseFactory(actionContext!);
-            case IDependencyException when (exception.InnerException is DbConflictException):
-                return Conflict(exception.Message);
-            case IDependencyException when (exception.InnerException is LockedEntityException<User>):
-                return Problem(GetInnerMessage(exception));
-            case IServiceException:
-                return Problem(StaticData.ControllerMessages.InternalServerError);
-            default:
-                LoggingBroker.LogError(exception);
-                return Problem(StaticData.ControllerMessages.InternalServerError);
-        }
     }
 }

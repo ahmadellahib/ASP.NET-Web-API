@@ -9,44 +9,26 @@ internal sealed class AuthorProcessingService : IAuthorProcessingService
 {
     private readonly IAuthorFoundationService _authorFoundationService;
     private readonly IPropertyMappingService _propertyMappingService;
-    private readonly IServicesExceptionsLogger<AuthorProcessingService> _servicesExceptionsLogger;
 
-    public AuthorProcessingService(IAuthorFoundationService authorFoundationService,
-        IPropertyMappingService propertyMappingService,
-        IServicesExceptionsLogger<AuthorProcessingService> servicesExceptionsLogger)
+    public AuthorProcessingService(IAuthorFoundationService authorFoundationService, IPropertyMappingService propertyMappingService)
     {
         _authorFoundationService = authorFoundationService ?? throw new ArgumentNullException(nameof(authorFoundationService));
         _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
-        _servicesExceptionsLogger = servicesExceptionsLogger ?? throw new ArgumentNullException(nameof(servicesExceptionsLogger));
     }
 
     public async Task<Author> CreateAuthorAsync(Author author, CancellationToken cancellationToken)
     {
-        try
-        {
-            author.Id = Guid.NewGuid();
-            author.ConcurrencyStamp = Guid.NewGuid().ToString();
+        author.Id = Guid.NewGuid();
+        author.ConcurrencyStamp = Guid.NewGuid().ToString();
 
-            return await _authorFoundationService.CreateAuthorAsync(author, cancellationToken);
-        }
-        catch (Exception exception)
-        {
-            throw HandleException(exception);
-        }
+        return await _authorFoundationService.CreateAuthorAsync(author, cancellationToken);
     }
 
     public async Task<Author> ModifyAuthorAsync(Author author, CancellationToken cancellationToken)
     {
-        try
-        {
-            author.ConcurrencyStamp = Guid.NewGuid().ToString();
+        author.ConcurrencyStamp = Guid.NewGuid().ToString();
 
-            return await _authorFoundationService.ModifyAuthorAsync(author, cancellationToken);
-        }
-        catch (Exception exception)
-        {
-            throw HandleException(exception);
-        }
+        return await _authorFoundationService.ModifyAuthorAsync(author, cancellationToken);
     }
 
     public Task RemoveAuthorByIdAsync(Guid authorId, CancellationToken cancellationToken) =>
@@ -60,35 +42,21 @@ internal sealed class AuthorProcessingService : IAuthorProcessingService
 
     public IQueryable<Author> SearchAuthors(AuthorResourceParameters authorResourceParameters)
     {
-        try
+        if (!_propertyMappingService.ValidMappingExistsFor<Author, Author>(authorResourceParameters.OrderBy))
         {
-            if (!_propertyMappingService.ValidMappingExistsFor<Author, Author>(authorResourceParameters.OrderBy))
-            {
-                throw new ResourceParametersException($"Order by '{authorResourceParameters.OrderBy}' is not valid property for Author.");
-            }
+            throw new ResourceParametersException($"Order by '{authorResourceParameters.OrderBy}' is not valid property for Author.");
+        }
 
-            IQueryable<Author> collection = _authorFoundationService.RetrieveAllAuthors();
+        IQueryable<Author> collection = _authorFoundationService.RetrieveAllAuthors();
 
-            if (!string.IsNullOrWhiteSpace(authorResourceParameters.OrderBy))
-            {
-                Dictionary<string, PropertyMappingValue> authorPropertyMappingDictionary = _propertyMappingService.GetPropertyMapping<Author, Author>();
-                collection = collection.ApplySort(authorResourceParameters.OrderBy, authorPropertyMappingDictionary);
-            }
-
+        if (string.IsNullOrWhiteSpace(authorResourceParameters.OrderBy))
+        {
             return collection;
         }
-        catch (Exception exception)
-        {
-            throw HandleException(exception);
-        }
-    }
 
-    private Exception HandleException(Exception exception)
-    {
-        throw exception switch
-        {
-            ResourceParametersException or CancellationException or ValidationException or IDependencyException or IServiceException => exception,
-            _ => _servicesExceptionsLogger.CreateAndLogServiceException(exception),
-        };
+        Dictionary<string, PropertyMappingValue> authorPropertyMappingDictionary = _propertyMappingService.GetPropertyMapping<Author, Author>();
+        collection = collection.ApplySort(authorResourceParameters.OrderBy, authorPropertyMappingDictionary);
+
+        return collection;
     }
 }

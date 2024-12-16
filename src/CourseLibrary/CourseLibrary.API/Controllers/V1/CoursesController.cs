@@ -1,7 +1,6 @@
 ﻿using CourseLibrary.API.Contracts.Courses;
 using CourseLibrary.API.Filters;
 using CourseLibrary.API.Models.Courses;
-using CourseLibrary.API.Models.Exceptions;
 using CourseLibrary.API.Pagination;
 using CourseLibrary.API.Services.V1.Courses;
 using Microsoft.AspNetCore.Mvc;
@@ -31,16 +30,9 @@ public class CoursesController : BaseController<CoursesController>
     [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
     public async ValueTask<IActionResult> GetCourseAsync([FromRoute] Guid courseId, [FromServices] IOptions<ApiBehaviorOptions> apiBehaviorOptions, CancellationToken cancellationToken)
     {
-        try
-        {
-            Course course = await _courseOrchestrationService.RetrieveCourseByIdAsync(courseId, cancellationToken);
+        Course course = await _courseOrchestrationService.RetrieveCourseByIdAsync(courseId, cancellationToken);
 
-            return Ok((CourseDto)course);
-        }
-        catch (Exception exception)
-        {
-            return HandleException(exception, apiBehaviorOptions, ControllerContext);
-        }
+        return Ok((CourseDto)course);
     }
 
     [HttpPost]
@@ -52,16 +44,9 @@ public class CoursesController : BaseController<CoursesController>
     [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> PostCourseAsync([FromBody] CourseForCreation courseForCreation, [FromServices] IOptions<ApiBehaviorOptions> apiBehaviorOptions, CancellationToken cancellationToken)
     {
-        try
-        {
-            Course addedCourse = await _courseOrchestrationService.CreateCourseAsync((Course)courseForCreation, cancellationToken);
+        Course addedCourse = await _courseOrchestrationService.CreateCourseAsync((Course)courseForCreation, cancellationToken);
 
-            return CreatedAtRoute(nameof(GetCourseAsync), new { courseId = addedCourse.Id }, (CourseCreatedDto)addedCourse);
-        }
-        catch (Exception exception)
-        {
-            return HandleException(exception, apiBehaviorOptions, ControllerContext);
-        }
+        return CreatedAtRoute(nameof(GetCourseAsync), new { courseId = addedCourse.Id }, (CourseCreatedDto)addedCourse);
     }
 
     [HttpPatch("{courseId}")]
@@ -73,18 +58,11 @@ public class CoursesController : BaseController<CoursesController>
     [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> PatchCourseAsync([FromRoute] Guid courseId, [FromBody] CourseForUpdate courseForUpdate, [FromServices] IOptions<ApiBehaviorOptions> apiBehaviorOptions, CancellationToken cancellationToken)
     {
-        try
-        {
-            Course course = (Course)courseForUpdate;
-            course.Id = courseId;
-            Course storageCourse = await _courseOrchestrationService.ModifyCourseAsync(course, cancellationToken);
+        Course course = (Course)courseForUpdate;
+        course.Id = courseId;
+        Course storageCourse = await _courseOrchestrationService.ModifyCourseAsync(course, cancellationToken);
 
-            return Ok((CourseUpdatedDto)storageCourse);
-        }
-        catch (Exception exception)
-        {
-            return HandleException(exception, apiBehaviorOptions, ControllerContext);
-        }
+        return Ok((CourseUpdatedDto)storageCourse);
     }
 
     [HttpDelete("{courseId}")]
@@ -95,16 +73,9 @@ public class CoursesController : BaseController<CoursesController>
     [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> DeleteCourseAsync(Guid courseId, [FromServices] IOptions<ApiBehaviorOptions> apiBehaviorOptions, CancellationToken cancellationToken)
     {
-        try
-        {
-            await _courseOrchestrationService.RemoveCourseByIdAsync(courseId, cancellationToken);
+        await _courseOrchestrationService.RemoveCourseByIdAsync(courseId, cancellationToken);
 
-            return NoContent();
-        }
-        catch (Exception exception)
-        {
-            return HandleException(exception, apiBehaviorOptions, ControllerContext);
-        }
+        return NoContent();
     }
 
     [HttpGet(Name = nameof(SearchCoursesAsync))]
@@ -113,37 +84,25 @@ public class CoursesController : BaseController<CoursesController>
     [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
     public ActionResult<IEnumerable<CourseDto>> SearchCoursesAsync([FromQuery] CourseResourceParameters courseResourceParameters)
     {
-        try
+        PagedList<Course> storagePagedCourses = _courseOrchestrationService.SearchCourses(courseResourceParameters);
+
+        PaginationMetaData paginationMetaData = new()
         {
-            PagedList<Course> storagePagedCourses = _courseOrchestrationService.SearchCourses(courseResourceParameters);
+            TotalCount = storagePagedCourses.TotalCount,
+            PageSize = storagePagedCourses.PageSize,
+            CurrentPage = storagePagedCourses.CurrentPage,
+            TotalPages = storagePagedCourses.TotalPages,
+            HasPrevious = storagePagedCourses.HasPrevious,
+            HasNext = storagePagedCourses.HasNext,
+            PreviousPageLink = storagePagedCourses.HasPrevious ? CreateCourseResourceUri(courseResourceParameters, ResourceUriType.PreviousPage) : string.Empty,
+            NextPageLink = storagePagedCourses.HasNext ? CreateCourseResourceUri(courseResourceParameters, ResourceUriType.NextPage) : string.Empty
+        };
 
-            PaginationMetaData PaginationMetaData = new()
-            {
-                TotalCount = storagePagedCourses.TotalCount,
-                PageSize = storagePagedCourses.PageSize,
-                CurrentPage = storagePagedCourses.CurrentPage,
-                TotalPages = storagePagedCourses.TotalPages,
-                HasPrevious = storagePagedCourses.HasPrevious,
-                HasNext = storagePagedCourses.HasNext,
-                PreviousPageLink = storagePagedCourses.HasPrevious ? CreateCourseResourceUri(courseResourceParameters, ResourceUriType.PreviousPage) : string.Empty,
-                NextPageLink = storagePagedCourses.HasNext ? CreateCourseResourceUri(courseResourceParameters, ResourceUriType.NextPage) : string.Empty
-            };
+        Response.Headers.Append("X-Pagination", JsonSerializer.Serialize(paginationMetaData));
 
-            Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(PaginationMetaData));
+        List<CourseDto> coursesDto = storagePagedCourses.Select(course => (CourseDto)course).ToList();
 
-            List<CourseDto> coursesDtos = new();
-
-            foreach (Course course in storagePagedCourses)
-            {
-                coursesDtos.Add((CourseDto)course);
-            }
-
-            return Ok(coursesDtos);
-        }
-        catch (Exception exception)
-        {
-            return (ActionResult)HandleException(exception);
-        }
+        return Ok(coursesDto);
     }
 
     private string CreateCourseResourceUri(CourseResourceParameters courseResourceParameters, ResourceUriType type)
@@ -187,34 +146,5 @@ public class CoursesController : BaseController<CoursesController>
         }
 
         return resourceUri is null ? string.Empty : resourceUri.Replace("http://", "https://");
-    }
-
-    private IActionResult HandleException(Exception exception, IOptions<ApiBehaviorOptions>? apiBehaviorOptions = null, ActionContext? actionContext = null)
-    {
-        switch (exception)
-        {
-            case ResourceParametersException:
-                return BadRequest(exception.Message);
-            case CancellationException:
-                return NoContent();
-            case ValidationException when exception.InnerException is NotFoundEntityException<Course>:
-                return NotFound(GetInnerMessage(exception));
-            case ValidationException:
-                if (apiBehaviorOptions is null || actionContext is null)
-                    throw new ArgumentNullException(nameof(apiBehaviorOptions));
-
-                SetModelState(ModelState, (ValidationException)exception);
-
-                return apiBehaviorOptions!.Value.InvalidModelStateResponseFactory(actionContext!);
-            case IDependencyException when (exception.InnerException is DbConflictException):
-                return Conflict(exception.Message);
-            case IDependencyException when (exception.InnerException is LockedEntityException<Course>):
-                return Problem(GetInnerMessage(exception));
-            case IServiceException:
-                return Problem(StaticData.ControllerMessages.InternalServerError);
-            default:
-                LoggingBroker.LogError(exception);
-                return Problem(StaticData.ControllerMessages.InternalServerError);
-        }
     }
 }

@@ -1,7 +1,6 @@
 ﻿using CourseLibrary.API.Contracts.Authors;
 using CourseLibrary.API.Filters;
 using CourseLibrary.API.Models.Authors;
-using CourseLibrary.API.Models.Exceptions;
 using CourseLibrary.API.Pagination;
 using CourseLibrary.API.Services.V1.Authors;
 using Microsoft.AspNetCore.Mvc;
@@ -31,16 +30,9 @@ public class AuthorsController : BaseController<AuthorsController>
     [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
     public async ValueTask<IActionResult> GetAuthorAsync([FromRoute] Guid authorId, [FromServices] IOptions<ApiBehaviorOptions> apiBehaviorOptions, CancellationToken cancellationToken)
     {
-        try
-        {
-            Author author = await _authorOrchestrationService.RetrieveAuthorByIdAsync(authorId, cancellationToken);
+        Author author = await _authorOrchestrationService.RetrieveAuthorByIdAsync(authorId, cancellationToken);
 
-            return Ok((AuthorDto)author);
-        }
-        catch (Exception exception)
-        {
-            return HandleException(exception, apiBehaviorOptions, ControllerContext);
-        }
+        return Ok((AuthorDto)author);
     }
 
     [HttpPost]
@@ -52,16 +44,9 @@ public class AuthorsController : BaseController<AuthorsController>
     [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> PostAuthorAsync([FromBody] AuthorForCreation authorForCreation, [FromServices] IOptions<ApiBehaviorOptions> apiBehaviorOptions, CancellationToken cancellationToken)
     {
-        try
-        {
-            Author addedAuthor = await _authorOrchestrationService.CreateAuthorAsync((Author)authorForCreation, cancellationToken);
+        Author addedAuthor = await _authorOrchestrationService.CreateAuthorAsync((Author)authorForCreation, cancellationToken);
 
-            return CreatedAtRoute(nameof(GetAuthorAsync), new { authorId = addedAuthor.Id }, (AuthorCreatedDto)addedAuthor);
-        }
-        catch (Exception exception)
-        {
-            return HandleException(exception, apiBehaviorOptions, ControllerContext);
-        }
+        return CreatedAtRoute(nameof(GetAuthorAsync), new { authorId = addedAuthor.Id }, (AuthorCreatedDto)addedAuthor);
     }
 
     [HttpPatch("{authorId}")]
@@ -73,18 +58,11 @@ public class AuthorsController : BaseController<AuthorsController>
     [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> PatchAuthorAsync([FromRoute] Guid authorId, [FromBody] AuthorForUpdate authorForUpdate, [FromServices] IOptions<ApiBehaviorOptions> apiBehaviorOptions, CancellationToken cancellationToken)
     {
-        try
-        {
-            Author author = (Author)authorForUpdate;
-            author.Id = authorId;
-            Author storageAuthor = await _authorOrchestrationService.ModifyAuthorAsync(author, cancellationToken);
+        Author author = (Author)authorForUpdate;
+        author.Id = authorId;
+        Author storageAuthor = await _authorOrchestrationService.ModifyAuthorAsync(author, cancellationToken);
 
-            return Ok((AuthorUpdatedDto)storageAuthor);
-        }
-        catch (Exception exception)
-        {
-            return HandleException(exception, apiBehaviorOptions, ControllerContext);
-        }
+        return Ok((AuthorUpdatedDto)storageAuthor);
     }
 
     [HttpDelete("{authorId}")]
@@ -95,16 +73,9 @@ public class AuthorsController : BaseController<AuthorsController>
     [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> DeleteAuthorAsync(Guid authorId, [FromServices] IOptions<ApiBehaviorOptions> apiBehaviorOptions, CancellationToken cancellationToken)
     {
-        try
-        {
-            await _authorOrchestrationService.RemoveAuthorByIdAsync(authorId, cancellationToken);
+        await _authorOrchestrationService.RemoveAuthorByIdAsync(authorId, cancellationToken);
 
-            return NoContent();
-        }
-        catch (Exception exception)
-        {
-            return HandleException(exception, apiBehaviorOptions, ControllerContext);
-        }
+        return NoContent();
     }
 
     [HttpGet(Name = nameof(SearchAuthorsAsync))]
@@ -113,37 +84,25 @@ public class AuthorsController : BaseController<AuthorsController>
     [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
     public ActionResult<IEnumerable<AuthorDto>> SearchAuthorsAsync([FromQuery] AuthorResourceParameters authorResourceParameters)
     {
-        try
+        PagedList<Author> storagePagedAuthors = _authorOrchestrationService.SearchAuthors(authorResourceParameters);
+
+        PaginationMetaData paginationMetaData = new()
         {
-            PagedList<Author> storagePagedAuthors = _authorOrchestrationService.SearchAuthors(authorResourceParameters);
+            TotalCount = storagePagedAuthors.TotalCount,
+            PageSize = storagePagedAuthors.PageSize,
+            CurrentPage = storagePagedAuthors.CurrentPage,
+            TotalPages = storagePagedAuthors.TotalPages,
+            HasPrevious = storagePagedAuthors.HasPrevious,
+            HasNext = storagePagedAuthors.HasNext,
+            PreviousPageLink = storagePagedAuthors.HasPrevious ? CreateAuthorResourceUri(authorResourceParameters, ResourceUriType.PreviousPage) : string.Empty,
+            NextPageLink = storagePagedAuthors.HasNext ? CreateAuthorResourceUri(authorResourceParameters, ResourceUriType.NextPage) : string.Empty
+        };
 
-            PaginationMetaData PaginationMetaData = new()
-            {
-                TotalCount = storagePagedAuthors.TotalCount,
-                PageSize = storagePagedAuthors.PageSize,
-                CurrentPage = storagePagedAuthors.CurrentPage,
-                TotalPages = storagePagedAuthors.TotalPages,
-                HasPrevious = storagePagedAuthors.HasPrevious,
-                HasNext = storagePagedAuthors.HasNext,
-                PreviousPageLink = storagePagedAuthors.HasPrevious ? CreateAuthorResourceUri(authorResourceParameters, ResourceUriType.PreviousPage) : string.Empty,
-                NextPageLink = storagePagedAuthors.HasNext ? CreateAuthorResourceUri(authorResourceParameters, ResourceUriType.NextPage) : string.Empty
-            };
+        Response.Headers.Append("X-Pagination", JsonSerializer.Serialize(paginationMetaData));
 
-            Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(PaginationMetaData));
+        List<AuthorDto> authorsDto = storagePagedAuthors.Select(author => (AuthorDto)author).ToList();
 
-            List<AuthorDto> authorsDtos = new();
-
-            foreach (Author author in storagePagedAuthors)
-            {
-                authorsDtos.Add((AuthorDto)author);
-            }
-
-            return Ok(authorsDtos);
-        }
-        catch (Exception exception)
-        {
-            return (ActionResult)HandleException(exception);
-        }
+        return Ok(authorsDto);
     }
 
     private string CreateAuthorResourceUri(AuthorResourceParameters authorResourceParameters, ResourceUriType type)
@@ -187,34 +146,5 @@ public class AuthorsController : BaseController<AuthorsController>
         }
 
         return resourceUri is null ? string.Empty : resourceUri.Replace("http://", "https://");
-    }
-
-    private IActionResult HandleException(Exception exception, IOptions<ApiBehaviorOptions>? apiBehaviorOptions = null, ActionContext? actionContext = null)
-    {
-        switch (exception)
-        {
-            case ResourceParametersException:
-                return BadRequest(exception.Message);
-            case CancellationException:
-                return NoContent();
-            case ValidationException when exception.InnerException is NotFoundEntityException<Author>:
-                return NotFound(GetInnerMessage(exception));
-            case ValidationException:
-                if (apiBehaviorOptions is null || actionContext is null)
-                    throw new ArgumentNullException(nameof(apiBehaviorOptions));
-
-                SetModelState(ModelState, (ValidationException)exception);
-
-                return apiBehaviorOptions!.Value.InvalidModelStateResponseFactory(actionContext!);
-            case IDependencyException when (exception.InnerException is DbConflictException):
-                return Conflict(exception.Message);
-            case IDependencyException when (exception.InnerException is LockedEntityException<Author>):
-                return Problem(GetInnerMessage(exception));
-            case IServiceException:
-                return Problem(StaticData.ControllerMessages.InternalServerError);
-            default:
-                LoggingBroker.LogError(exception);
-                return Problem(StaticData.ControllerMessages.InternalServerError);
-        }
     }
 }

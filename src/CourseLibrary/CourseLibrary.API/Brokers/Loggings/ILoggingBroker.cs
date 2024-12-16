@@ -10,9 +10,9 @@ public interface ILoggingBroker<T> where T : class
 
     void LogInformation(string message, params object?[] args);
 
-    void LogWarning(string message);
+    void LogWarning(string message, params object?[] args);
 
-    void LogError(Exception exception);
+    void LogError(Exception exception, string instance);
 
-    void LogCritical(Exception exception);
+    void LogCritical(string instance, Exception exception);
 }

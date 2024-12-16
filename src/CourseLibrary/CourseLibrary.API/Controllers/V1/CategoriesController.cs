@@ -1,13 +1,11 @@
-﻿using CategoryLibrary.API.Services.V1.Categories;
-using CourseLibrary.API;
-using CourseLibrary.API.Contracts.Categories;
+﻿using CourseLibrary.API.Contracts.Categories;
 using CourseLibrary.API.Filters;
 using CourseLibrary.API.Models.Categories;
-using CourseLibrary.API.Models.Exceptions;
+using CourseLibrary.API.Services.V1.Categories;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
-namespace CategoryLibrary.API.Controllers.V1;
+namespace CourseLibrary.API.Controllers.V1;
 
 [ApiController]
 [ApiVersion("1.0")]
@@ -30,16 +28,9 @@ public class CategoriesController : BaseController<CategoriesController>
     [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
     public IActionResult GetCategory([FromRoute] Guid categoryId, [FromServices] IOptions<ApiBehaviorOptions> apiBehaviorOptions)
     {
-        try
-        {
-            Category category = _categoryOrchestrationService.RetrieveCategoryById(categoryId);
+        Category category = _categoryOrchestrationService.RetrieveCategoryById(categoryId);
 
-            return Ok((CategoryDto)category);
-        }
-        catch (Exception exception)
-        {
-            return HandleException(exception, apiBehaviorOptions, ControllerContext);
-        }
+        return Ok((CategoryDto)category);
     }
 
     [HttpPost]
@@ -51,16 +42,9 @@ public class CategoriesController : BaseController<CategoriesController>
     [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> PostCategoryAsync([FromBody] CategoryForCreation categoryForCreation, [FromServices] IOptions<ApiBehaviorOptions> apiBehaviorOptions, CancellationToken cancellationToken)
     {
-        try
-        {
-            Category addedCategory = await _categoryOrchestrationService.CreateCategoryAsync((Category)categoryForCreation, cancellationToken);
+        Category addedCategory = await _categoryOrchestrationService.CreateCategoryAsync((Category)categoryForCreation, cancellationToken);
 
-            return CreatedAtRoute(nameof(GetCategory), new { categoryId = addedCategory.Id }, (CategoryDto)addedCategory);
-        }
-        catch (Exception exception)
-        {
-            return HandleException(exception, apiBehaviorOptions, ControllerContext);
-        }
+        return CreatedAtRoute(nameof(GetCategory), new { categoryId = addedCategory.Id }, (CategoryDto)addedCategory);
     }
 
     [HttpPatch("{categoryId}")]
@@ -72,18 +56,11 @@ public class CategoriesController : BaseController<CategoriesController>
     [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> PatchCategoryAsync([FromRoute] Guid categoryId, [FromBody] CategoryForUpdate categoryForUpdate, [FromServices] IOptions<ApiBehaviorOptions> apiBehaviorOptions, CancellationToken cancellationToken)
     {
-        try
-        {
-            Category category = (Category)categoryForUpdate;
-            category.Id = categoryId;
-            Category storageCategory = await _categoryOrchestrationService.ModifyCategoryAsync(category, cancellationToken);
+        Category category = (Category)categoryForUpdate;
+        category.Id = categoryId;
+        Category storageCategory = await _categoryOrchestrationService.ModifyCategoryAsync(category, cancellationToken);
 
-            return Ok((CategoryDto)storageCategory);
-        }
-        catch (Exception exception)
-        {
-            return HandleException(exception, apiBehaviorOptions, ControllerContext);
-        }
+        return Ok((CategoryDto)storageCategory);
     }
 
     [HttpGet(Name = nameof(GetAllCategoriesAsync))]
@@ -91,49 +68,10 @@ public class CategoriesController : BaseController<CategoriesController>
     [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
     public ActionResult<IEnumerable<CategoryDto>> GetAllCategoriesAsync()
     {
-        try
-        {
-            IEnumerable<Category> storageCategories = _categoryOrchestrationService.RetrieveAllCategories();
+        List<CategoryDto> categoriesDto = _categoryOrchestrationService.RetrieveAllCategories()
+            .Select(category => (CategoryDto)category)
+            .ToList();
 
-            List<CategoryDto> categoriesDtos = new();
-
-            foreach (Category category in storageCategories)
-            {
-                categoriesDtos.Add((CategoryDto)category);
-            }
-
-            return Ok(categoriesDtos);
-        }
-        catch (Exception exception)
-        {
-            return (ActionResult)HandleException(exception);
-        }
-    }
-
-    private IActionResult HandleException(Exception exception, IOptions<ApiBehaviorOptions>? apiBehaviorOptions = null, ActionContext? actionContext = null)
-    {
-        switch (exception)
-        {
-            case CancellationException:
-                return NoContent();
-            case ValidationException when exception.InnerException is NotFoundEntityException<Category>:
-                return NotFound(GetInnerMessage(exception));
-            case ValidationException:
-                if (apiBehaviorOptions is null || actionContext is null)
-                    throw new ArgumentNullException(nameof(apiBehaviorOptions));
-
-                SetModelState(ModelState, (ValidationException)exception);
-
-                return apiBehaviorOptions!.Value.InvalidModelStateResponseFactory(actionContext!);
-            case IDependencyException when (exception.InnerException is DbConflictException):
-                return Conflict(exception.Message);
-            case IDependencyException when (exception.InnerException is LockedEntityException<Category>):
-                return Problem(GetInnerMessage(exception));
-            case IServiceException:
-                return Problem(StaticData.ControllerMessages.InternalServerError);
-            default:
-                LoggingBroker.LogError(exception);
-                return Problem(StaticData.ControllerMessages.InternalServerError);
-        }
+        return Ok(categoriesDto);
     }
 }

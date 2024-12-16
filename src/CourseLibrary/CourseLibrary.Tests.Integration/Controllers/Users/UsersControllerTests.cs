@@ -1,6 +1,6 @@
 ﻿using CourseLibrary.API.Contracts.Users;
-using Newtonsoft.Json;
 using System.Net.Http.Json;
+using System.Text.Json;
 using Tynamix.ObjectFiller;
 
 namespace CourseLibrary.Tests.Integration.Controllers.Users;
@@ -45,7 +45,7 @@ public partial class UsersControllerTests : IClassFixture<IntegrationTestFactory
         UserForCreation userForCreation = CreateRandomUserForCreation();
         HttpResponseMessage responseMessage = await _httpClient.PostAsJsonAsync(UsersRelativeUrl, userForCreation);
         string responseContent = await responseMessage.Content.ReadAsStringAsync();
-        return JsonConvert.DeserializeObject<UserDto>(responseContent);
+        return JsonSerializer.Deserialize<UserDto>(responseContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
     }
 
     private async Task<List<UserDto>> CreateRandomPostedUsersAsync()

@@ -1,28 +1,28 @@
 ﻿namespace CourseLibrary.API.Models.Exceptions;
 
-public class NotFoundEntityException<T> : Exception
+public class NotFoundEntityException : Exception
 {
-    public NotFoundEntityException(params Guid[] ids)
-        : base(GenerateBaseMessage(ids)) { }
+    public NotFoundEntityException(Type T, params Guid[] ids)
+        : base(GenerateBaseMessage(T, ids)) { }
 
-    public NotFoundEntityException(params int[] ids)
-        : base(GenerateBaseMessage(ids)) { }
+    public NotFoundEntityException(Type T, params int[] ids)
+        : base(GenerateBaseMessage(T, ids)) { }
 
     public NotFoundEntityException(string message)
         : base(message) { }
 
-    private static string GenerateBaseMessage(params Guid[] ids)
+    private static string GenerateBaseMessage(Type T, params Guid[] ids)
     {
         string idsString = ConvertParamsToString(ids);
 
-        return $"The requested resource {typeof(T).Name} with id: {idsString} could not be found.";
+        return $"The requested resource {T.Name} with id: {idsString} could not be found.";
     }
 
-    private static string GenerateBaseMessage(params int[] ids)
+    private static string GenerateBaseMessage(Type T, params int[] ids)
     {
         string idsString = ConvertParamsToString(ids);
 
-        return $"The requested resource {typeof(T).Name} with id: {idsString} could not be found.";
+        return $"The requested resource {T.Name} with id: {idsString} could not be found.";
     }
 
     private static string ConvertParamsToString(params Guid[] ids)

@@ -11,9 +11,9 @@ internal interface IServicesLogicValidator
 
     void ValidateParameter(string stringParameter, string parameterName);
 
-    void ValidateStorageEntity<T>(object? storageEntity, params int[] id);
-
     void ValidateParameter(IFormFile fileParameter, string parameterName);
+
+    void ValidateStorageEntity<T>(object? storageEntity, params int[] id);
 
     void ValidateStorageEntity<T>(object? storageEntity, params Guid[] ids);
 

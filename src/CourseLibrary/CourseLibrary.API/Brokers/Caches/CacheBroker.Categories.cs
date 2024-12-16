@@ -7,9 +7,9 @@ public partial class CacheBroker
 {
     private const string CategoriesCacheKey = "CategoriesCacheKey";
 
-    public List<Category> GetCachedCategories()
+    public List<Category>? GetCachedCategories()
     {
-        return GetCache<List<Category>>(CategoriesCacheKey);
+        return GetCache<List<Category>?>(CategoriesCacheKey);
     }
 
     public void SetCachedCategories(List<Category> categoriesList)

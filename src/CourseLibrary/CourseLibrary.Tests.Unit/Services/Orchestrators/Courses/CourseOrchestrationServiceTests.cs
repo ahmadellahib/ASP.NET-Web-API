@@ -11,13 +11,10 @@ public partial class CourseOrchestrationServiceTests : BaseServiceTest
     private readonly CancellationToken cts = new CancellationTokenSource().Token;
     private readonly ICourseProcessingService _courseProcessingService = Substitute.For<ICourseProcessingService>();
     private readonly IServicesLogicValidator _servicesLogicValidator = Substitute.For<IServicesLogicValidator>();
-    private readonly IServicesExceptionsLogger<CourseOrchestrationService> _servicesExceptionsLogger = Substitute.For<IServicesExceptionsLogger<CourseOrchestrationService>>();
-
+    
     public CourseOrchestrationServiceTests()
     {
-        _sut = new CourseOrchestrationService(_courseProcessingService,
-            _servicesLogicValidator,
-            _servicesExceptionsLogger);
+        _sut = new CourseOrchestrationService(_courseProcessingService, _servicesLogicValidator);
     }
 
     private Course CreateRandomCourse(DateTimeOffset dateTimeOffset) =>

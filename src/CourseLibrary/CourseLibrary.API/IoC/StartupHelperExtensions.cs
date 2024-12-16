@@ -1,5 +1,4 @@
 ﻿using Bogus;
-using CategoryLibrary.API.Services.V1.Categories;
 using CourseLibrary.API.Brokers.Caches;
 using CourseLibrary.API.Brokers.Loggings;
 using CourseLibrary.API.Brokers.Storages;
@@ -22,6 +21,7 @@ using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace CourseLibrary.API.IoC;
 
@@ -37,7 +37,10 @@ internal static class StartupHelperExtensions
             .AddEndpointsApiExplorer()
             .RegisterSwagger()
             .RegisterFluentValidation()
-            .AddControllers();
+            .AddControllers(options =>
+            {
+                options.Filters.Add<GlobalExceptionFilter>();
+            });
 
         return builder.Build();
     }
@@ -61,18 +64,6 @@ internal static class StartupHelperExtensions
             app.UseSwagger();
             app.UseSwaggerUI();
             app.UseDeveloperExceptionPage();
-        }
-        else
-        {
-            app.UseExceptionHandler(appBuilder =>
-            {
-                appBuilder.Run(async context =>
-                {
-                    context.Response.StatusCode = 500;
-                    await context.Response.WriteAsync(
-                        "An unexpected fault happened. Try again later.");
-                });
-            });
         }
 
         app.UseHttpsRedirection();
@@ -218,7 +209,6 @@ internal static class StartupHelperExtensions
         services.AddScoped<EndpointElapsedTimeFilter>();
 
         services.AddTransient(typeof(ILoggingBroker<>), typeof(LoggingBroker<>));
-        services.AddTransient(typeof(IServicesExceptionsLogger<>), typeof(ServicesExceptionsLogger<>));
         services.AddTransient<IPropertyMappingService, PropertyMappingService>();
         services.AddTransient<IUserFoundationService, UserFoundationService>();
         services.AddTransient<IUserProcessingService, UserProcessingService>();
@@ -283,5 +273,4 @@ internal static class StartupHelperExtensions
 
         return services;
     }
-
 }

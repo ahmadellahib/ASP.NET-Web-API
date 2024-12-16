@@ -1,8 +1,9 @@
 ﻿using CourseLibrary.API.Contracts.Users;
 using FluentAssertions;
-using Newtonsoft.Json;
+using Microsoft.AspNetCore.Mvc;
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
 
 namespace CourseLibrary.Tests.Integration.Controllers.Users;
 
@@ -18,7 +19,7 @@ public partial class UsersControllerTests
         // Act
         HttpResponseMessage responseMessage = await _httpClient.PostAsJsonAsync(UsersRelativeUrl, userForCreation);
         string responseContent = await responseMessage.Content.ReadAsStringAsync();
-        UserDto expectedUser = JsonConvert.DeserializeObject<UserDto>(responseContent);
+        UserDto expectedUser = JsonSerializer.Deserialize<UserDto>(responseContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
         UserDto actualUser = await GetUserByIdAsync(expectedUser.Id);
 
         // Assert
@@ -38,7 +39,7 @@ public partial class UsersControllerTests
         // Act
         HttpResponseMessage responseMessage = await _httpClient.PatchAsJsonAsync(UsersRelativeUrl + "/" + randomUser.Id, userForUpdate);
         string responseContent = await responseMessage.Content.ReadAsStringAsync();
-        UserDto expectedUser = JsonConvert.DeserializeObject<UserDto>(responseContent);
+        UserDto expectedUser = JsonSerializer.Deserialize<UserDto>(responseContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
         UserDto actualUser = await GetUserByIdAsync(randomUser.Id);
 
         // Assert
@@ -57,7 +58,7 @@ public partial class UsersControllerTests
         // Act
         HttpResponseMessage responseMessage = await _httpClient.GetAsync(UsersRelativeUrl + "/" + expectedUser.Id);
         string responseContent = await responseMessage.Content.ReadAsStringAsync();
-        UserDto actualUser = JsonConvert.DeserializeObject<UserDto>(responseContent);
+        UserDto actualUser = JsonSerializer.Deserialize<UserDto>(responseContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
         // Assert
         responseMessage.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -71,14 +72,22 @@ public partial class UsersControllerTests
     {
         // Arrange
         Guid randomUserId = Guid.NewGuid();
+        ProblemDetails expectedResponse = new()
+        {
+            Title = "Not Found",
+            Status = 404,
+            Detail = "Resource not found.",
+            Instance = $"GET /{UsersRelativeUrl}/{randomUserId}"
+        };
 
         // Act
         HttpResponseMessage responseMessage = await _httpClient.GetAsync(UsersRelativeUrl + "/" + randomUserId);
         string responseContent = await responseMessage.Content.ReadAsStringAsync();
+        ProblemDetails actualResponse = JsonSerializer.Deserialize<ProblemDetails>(responseContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
         // Assert
         responseMessage.StatusCode.Should().Be(HttpStatusCode.NotFound);
-        responseContent.Should().Be($"The requested resource User with id: {randomUserId} could not be found.");
+        actualResponse.Should().BeEquivalentTo(expectedResponse);
     }
 
     [Fact]
@@ -93,7 +102,7 @@ public partial class UsersControllerTests
         // Assert
         responseMessage.StatusCode.Should().Be(HttpStatusCode.OK);
         string responseContent = await responseMessage.Content.ReadAsStringAsync();
-        List<UserDto> actualUsers = JsonConvert.DeserializeObject<List<UserDto>>(responseContent);
+        List<UserDto> actualUsers = JsonSerializer.Deserialize<List<UserDto>>(responseContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
         foreach (UserDto expectedUser in expectedUsers)
         {
