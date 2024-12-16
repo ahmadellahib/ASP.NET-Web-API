@@ -18,10 +18,9 @@ using CourseLibrary.API.Services.V1.PropertyMappings;
 using CourseLibrary.API.Services.V1.Users;
 using FluentValidation;
 using FluentValidation.AspNetCore;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
-using Microsoft.AspNetCore.Http.Features;
+using Asp.Versioning;
 
 namespace CourseLibrary.API.IoC;
 
@@ -240,14 +239,14 @@ internal static class StartupHelperExtensions
 
     public static IServiceCollection RegisterApiVersioning(this IServiceCollection services)
     {
-        services.AddApiVersioning(options =>
+        services
+            .AddApiVersioning(options =>
         {
             options.AssumeDefaultVersionWhenUnspecified = true;
             options.DefaultApiVersion = new ApiVersion(1, 0);
             options.ReportApiVersions = true;
-        });
-
-        services.AddVersionedApiExplorer(options =>
+        })
+            .AddApiExplorer(options =>
         {
             options.GroupNameFormat = "'v'VVV";
             options.SubstituteApiVersionInUrl = true;

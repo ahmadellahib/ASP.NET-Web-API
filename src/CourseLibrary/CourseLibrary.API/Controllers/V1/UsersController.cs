@@ -6,6 +6,7 @@ using CourseLibrary.API.Services.V1.Users;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using System.Text.Json;
+using Asp.Versioning;
 
 namespace CourseLibrary.API.Controllers.V1;
 
