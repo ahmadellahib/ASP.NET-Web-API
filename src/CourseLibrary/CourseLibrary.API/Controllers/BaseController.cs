@@ -1,4 +1,4 @@
-﻿using CourseLibrary.API.Brokers.Loggings;
+﻿using CourseLibrary.API.Brokers.Logging;
 using CourseLibrary.API.Models.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;

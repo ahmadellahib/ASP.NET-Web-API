@@ -1,4 +1,4 @@
-﻿using CourseLibrary.API.Brokers.Loggings;
+﻿using CourseLibrary.API.Brokers.Logging;
 using CourseLibrary.API.Brokers.Storages;
 using CourseLibrary.API.Models.Users;
 using CourseLibrary.API.Validators.Users;

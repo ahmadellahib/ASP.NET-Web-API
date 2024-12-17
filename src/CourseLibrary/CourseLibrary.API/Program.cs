@@ -3,7 +3,8 @@
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 WebApplication app = builder
-    .ConfigureSerilog()
+    .ConfigureLogging()
+    .ConfigureOpenTelemetry()
     .ConfigureServices()
     .ConfigurePipeline();
 

@@ -1,4 +1,5 @@
-﻿using CourseLibrary.API.Models.Courses;
+﻿using CourseLibrary.API.Diagnostics;
+using CourseLibrary.API.Models.Courses;
 using CourseLibrary.API.Pagination;
 
 namespace CourseLibrary.API.Services.V1.Courses;
@@ -34,8 +35,18 @@ internal sealed class CourseOrchestrationService : ICourseOrchestrationService
     public Task RemoveCoursesByAuthorIdAsync(Guid authorId, CancellationToken cancellationToken) =>
         _courseProcessingService.RemoveCoursesByAuthorIdAsync(authorId, cancellationToken);
 
-    public ValueTask<Course> RetrieveCourseByIdAsync(Guid courseId, CancellationToken cancellationToken) =>
-        _courseProcessingService.RetrieveCourseByIdAsync(courseId, cancellationToken);
+    public async ValueTask<Course> RetrieveCourseByIdAsync(Guid courseId, CancellationToken cancellationToken)
+    {
+        Course course = await _courseProcessingService.RetrieveCourseByIdAsync(courseId, cancellationToken);
+
+        // log course metrics
+        DiagnosticsConfig.CoursesVisited.Add(1,
+            new KeyValuePair<string, object?>("course.id", course.Id),
+            new KeyValuePair<string, object?>("course.title", course.Title),
+            new KeyValuePair<string, object?>("course.author.id", course.AuthorId));
+        return course;
+    }
+
 
     public IEnumerable<Course> RetrieveAllCourses() =>
         _courseProcessingService.RetrieveAllCourses();

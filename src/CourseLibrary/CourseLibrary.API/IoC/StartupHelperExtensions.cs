@@ -1,6 +1,6 @@
 ﻿using Bogus;
 using CourseLibrary.API.Brokers.Caches;
-using CourseLibrary.API.Brokers.Loggings;
+using CourseLibrary.API.Brokers.Logging;
 using CourseLibrary.API.Brokers.Storages;
 using CourseLibrary.API.Extensions;
 using CourseLibrary.API.Filters;
@@ -21,6 +21,13 @@ using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Asp.Versioning;
+using CourseLibrary.API.Diagnostics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Logs;
+using OpenTelemetry.Exporter;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Trace;
+using Serilog.Events;
 
 namespace CourseLibrary.API.IoC;
 
@@ -44,14 +51,79 @@ internal static class StartupHelperExtensions
         return builder.Build();
     }
 
-    public static WebApplicationBuilder ConfigureSerilog(this WebApplicationBuilder builder)
+    public static WebApplicationBuilder ConfigureOpenTelemetry(this WebApplicationBuilder builder)
     {
+        ResourceBuilder resourceBuilder = ResourceBuilder.CreateDefault()
+            .AddService(DiagnosticsConfig.ServiceName, serviceVersion: DiagnosticsConfig.ServiceVersion)
+            .AddAttributes(new List<KeyValuePair<string, object>>
+            {
+                new("deployment.environment", builder.Environment.EnvironmentName),
+                new("host.name", Environment.MachineName),
+                new("os.description", System.Runtime.InteropServices.RuntimeInformation.OSDescription),
+                new("process.runtime.name", System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription)
+            });
+
+        builder.Logging.AddOpenTelemetry(options =>
+        {
+            options.SetResourceBuilder(resourceBuilder);
+            options.IncludeFormattedMessage = true;
+            options.IncludeScopes = true;
+            options.ParseStateValues = true;
+            //options.AddConsoleExporter(); // Demo purposes
+            options.AddOtlpExporter(x =>
+            {
+                x.Endpoint = new Uri("http://localhost:5341/ingest/otlp/v1/logs"); // seq endpoint
+                x.Protocol = OtlpExportProtocol.HttpProtobuf;
+            });
+        });
+
+        builder.Services.AddOpenTelemetry()
+            .ConfigureResource(resource => resource.AddService(DiagnosticsConfig.ServiceName))
+            .WithMetrics(metrics =>
+            {
+                metrics
+                    .AddAspNetCoreInstrumentation()
+                    .AddHttpClientInstrumentation();
+
+                metrics.AddMeter(DiagnosticsConfig.Meter.Name);
+
+                metrics.AddOtlpExporter();
+                //metrics.AddConsoleExporter(); // Demo purposes
+            })
+            .WithTracing(tracing =>
+            {
+                tracing.
+                    AddAspNetCoreInstrumentation()
+                    .AddHttpClientInstrumentation();
+
+                tracing.AddOtlpExporter(); // todo to be configured
+                //tracing.AddOtlpExporter(x =>
+                //{
+                //    x.Endpoint = new Uri("http://localhost:5341/ingest/otlp/v1/traces"); // seq endpoint
+                //    x.Protocol = OtlpExportProtocol.HttpProtobuf;
+                //});
+                //tracing.AddConsoleExporter(); // Demo purposes
+            });
+
+        return builder;
+    }
+
+    public static WebApplicationBuilder ConfigureLogging(this WebApplicationBuilder builder)
+    {
+        // logging just for console
         Log.Logger = new LoggerConfiguration()
-            .ReadFrom
-            .Configuration(builder.Configuration)
+            .MinimumLevel.Information()
+            .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+            .MinimumLevel.Override("Microsoft.Hosting.Lifetime", LogEventLevel.Information)
+            .MinimumLevel.Override("System", LogEventLevel.Warning)
+            .WriteTo.Console()
             .CreateLogger();
 
-        builder.Host.UseSerilog();
+        builder.Logging.ClearProviders();
+        builder.Services.AddLogging(loggingBuilder =>
+        {
+            loggingBuilder.AddSerilog(dispose: true);
+        });
 
         return builder;
     }
@@ -198,7 +270,7 @@ internal static class StartupHelperExtensions
 
         return services;
     }
-
+    
     private static IServiceCollection RegisterDependencies(this IServiceCollection services)
     {
         services.AddSingleton<ICacheBroker, CacheBroker>();

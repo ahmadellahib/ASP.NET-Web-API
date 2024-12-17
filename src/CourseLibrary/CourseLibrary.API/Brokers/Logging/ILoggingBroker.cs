@@ -1,4 +1,4 @@
-﻿namespace CourseLibrary.API.Brokers.Loggings;
+﻿namespace CourseLibrary.API.Brokers.Logging;
 
 public interface ILoggingBroker<T> where T : class
 {
@@ -12,7 +12,7 @@ public interface ILoggingBroker<T> where T : class
 
     void LogWarning(string message, params object?[] args);
 
-    void LogError(Exception exception, string instance);
+    void LogError(string scheme, string requestMethod, string requestPath, Exception exception);
 
-    void LogCritical(string instance, Exception exception);
+    void LogCritical(string scheme, string requestMethod, string requestPath, Exception exception);
 }

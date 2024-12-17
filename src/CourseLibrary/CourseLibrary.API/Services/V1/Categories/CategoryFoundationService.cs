@@ -1,5 +1,5 @@
 ﻿using CourseLibrary.API.Brokers.Caches;
-using CourseLibrary.API.Brokers.Loggings;
+using CourseLibrary.API.Brokers.Logging;
 using CourseLibrary.API.Brokers.Storages;
 using CourseLibrary.API.Models.Categories;
 using CourseLibrary.API.Validators.Categories;

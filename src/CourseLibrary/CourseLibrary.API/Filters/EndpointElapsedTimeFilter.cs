@@ -1,4 +1,4 @@
-﻿using CourseLibrary.API.Brokers.Loggings;
+﻿using CourseLibrary.API.Brokers.Logging;
 using Microsoft.AspNetCore.Mvc.Filters;
 using System.Diagnostics;
 
@@ -21,7 +21,7 @@ internal sealed class EndpointElapsedTimeFilter : IAsyncActionFilter
         await next();
 
         // Do something after the action executes.
-        _logger.LogInformation("Elapsed time for '{RequestMethod}' '{RequestPath}' response: {ElapsedTime} ms",
+        _logger.LogInformation(context.HttpContext.Request.Scheme.ToUpperInvariant() + " {RequestMethod} {RequestPath} responded in {ElapsedTime} ms",
             context.HttpContext.Request.Method,
             context.HttpContext.Request.Path,
             Stopwatch.GetElapsedTime(startTime).TotalMilliseconds);
