@@ -1,7 +1,4 @@
 ﻿using CourseLibrary.API;
-using DotNet.Testcontainers.Builders;
-using DotNet.Testcontainers.Configurations;
-using DotNet.Testcontainers.Containers;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -10,18 +7,19 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Testcontainers.MsSql;
 
 namespace CourseLibrary.Tests.Integration;
 
 public class IntegrationTestFactory : WebApplicationFactory<IApiMarker>, IAsyncLifetime
 {
-    private readonly TestcontainerDatabase _dbContainer = new TestcontainersBuilder<MsSqlTestcontainer>()
-            .WithDatabase(new MsSqlTestcontainerConfiguration
-            {
-                Password = "p@ssword123456",
-            })
+    private readonly MsSqlContainer _dbContainer;
+    public IntegrationTestFactory()
+    {
+        _dbContainer = new MsSqlBuilder()
             .WithCleanUp(true)
             .Build();
+    }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -38,7 +36,7 @@ public class IntegrationTestFactory : WebApplicationFactory<IApiMarker>, IAsyncL
             services.RemoveAll(typeof(IHostedService));
         });
 
-        SqlConnectionStringBuilder sqlConnectionStringBuilder = new(_dbContainer.ConnectionString)
+        SqlConnectionStringBuilder sqlConnectionStringBuilder = new(_dbContainer.GetConnectionString())
         {
             TrustServerCertificate = true,
             InitialCatalog = "CourseLibrary"
