@@ -69,12 +69,7 @@ internal static class StartupHelperExtensions
             options.IncludeFormattedMessage = true;
             options.IncludeScopes = true;
             options.ParseStateValues = true;
-            //options.AddConsoleExporter(); // Demo purposes
-            options.AddOtlpExporter(x =>
-            {
-                x.Endpoint = new Uri("http://localhost:5341/ingest/otlp/v1/logs"); // seq endpoint
-                x.Protocol = OtlpExportProtocol.HttpProtobuf;
-            });
+            options.AddOtlpExporter();
         });
 
         builder.Services.AddOpenTelemetry()
@@ -88,21 +83,14 @@ internal static class StartupHelperExtensions
                 metrics.AddMeter(DiagnosticsConfig.Meter.Name);
 
                 metrics.AddOtlpExporter();
-                //metrics.AddConsoleExporter(); // Demo purposes
             })
             .WithTracing(tracing =>
             {
-                tracing.
-                    AddAspNetCoreInstrumentation()
+                tracing
+                    .AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation();
 
-                tracing.AddOtlpExporter(); // todo to be configured
-                //tracing.AddOtlpExporter(x =>
-                //{
-                //    x.Endpoint = new Uri("http://localhost:5341/ingest/otlp/v1/traces"); // seq endpoint
-                //    x.Protocol = OtlpExportProtocol.HttpProtobuf;
-                //});
-                //tracing.AddConsoleExporter(); // Demo purposes
+                tracing.AddOtlpExporter();
             });
 
         return builder;
