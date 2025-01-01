@@ -1,6 +1,6 @@
 ﻿namespace CourseLibrary.API.Brokers.Logging;
 
-internal sealed class LoggingBroker<T> : ILoggingBroker<T> where T : class
+internal sealed partial class LoggingBroker<T> : ILoggingBroker<T> where T : class
 {
     private readonly ILogger<T> _logger;
 
